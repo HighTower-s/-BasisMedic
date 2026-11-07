@@ -1,0 +1,75 @@
+Runtime Errors         TSV_TNEW_PAGE_ALLOC_FAILED
+Date and Time           07.11.2026 02:15:03
+
+Short text
+No more storage space available for extending an internal table.
+
+What happened?
+The internal table "LT_BILLING_ITEMS" could not be enlarged, because the required space
+exceeds the maximum limit allowed for internal tables. The current ABAP program had to be
+terminated as a result.
+
+What can you do?
+Note which actions and input led to the error.
+For further help in analyzing the problem, contact your SAP administrator.
+You can use the ABAP dump analysis transaction ST22 to view and manage termination messages,
+in particular for long term reference.
+
+Error analysis
+A runtime error occurred when extending the internal table "LT_BILLING_ITEMS" because the
+particular limit no. "2" for table enlargement was reached. The system attempted to allocate
+more memory for the internal table but no more storage was available for the current work
+process.
+
+Information on where terminated
+Termination occurred in the ABAP program "ZFI_MONTHLY_REPORT", in "FILL_BILLING_TABLE".
+The main program was "ZFI_MONTHLY_REPORT".
+In the source code you have the termination point in line 142
+of the (Include) program "ZFI_MONTHLY_REPORT_F01".
+
+Source Code Extract
+Line  SourceCde
+ 139    LOOP AT lt_vbrk INTO ls_vbrk.
+ 140      SELECT * APPENDING TABLE lt_billing_items
+ 141        FROM vbrp
+>142        WHERE vbeln = ls_vbrk-vbeln.
+ 143    ENDLOOP.
+
+Chosen variables
+LT_BILLING_ITEMS: table, 4582913 lines, type-size 312 bytes
+
+System environment
+SAP-Release 758
+Application server... pr1app01
+Network address...   10.20.4.17
+Operating system...  Linux
+Database server...   pr1db01
+Database type...     HDB
+Database name...     PR1
+Database owner...    SAPPR1
+
+User, transaction...
+Client...            100
+User...               BATCH_FI
+Language key...       EN
+Transaction...        SE38
+Program...            ZFI_MONTHLY_REPORT
+Screen...              SAPMSSY0 1000
+Screen line...         6
+
+Information on caller of a function
+Function...          FILL_BILLING_TABLE
+Caller of function... ZFI_MONTHLY_REPORT
+
+Job log
+02:10:00 Job ZFI_MONTHLY_REPORT started
+02:10:01 Step 001 started (program ZFI_MONTHLY_REPORT, variant MONTHLY_FULL)
+02:15:03 Job cancelled after system exception TSV_TNEW_PAGE_ALLOC_FAILED
+
+Memory consumption
+Roll..................  32000
+EM.....................  2048000
+Heap...................  0
+Page....................  16384
+MM used.................  1998234
+MM allocated............  2048000
