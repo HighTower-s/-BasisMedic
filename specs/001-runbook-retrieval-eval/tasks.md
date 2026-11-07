@@ -248,13 +248,19 @@ variable and state the verdict honestly.
 **Independent Test**: Run the comparison and confirm each row differs from its baseline in exactly
 one named variable, all rows share a split and `corpus_sha`, and the table names a winner by number.
 
-- [ ] T067 [US4] Implement experiment E1 in `eval/run_all.py`: `fixed-800/150` versus `section` chunking with mode `dense` and `k=3` held constant, reporting **pre-gate** recall@3 and MRR, dev then test, with the varied variable named in the output (FR-037, research.md R-01)
-- [ ] T068 [US4] Implement experiment E2 in `eval/run_all.py`: `bm25` versus `dense` versus `hybrid` on E1's winning chunking, **pre-gate**, with `R-BM25` and `R-Dense-naive` marked as the named baselines (FR-038)
-- [ ] T069 [US4] Implement the comparison view in `eval/run_all.py` computing per-metric deltas against each row's baseline, and refusing to emit a table whose rows disagree on `split` or `corpus_sha` (data-model.md § 10)
-- [ ] T070 [US4] Generate the E1 and E2 tables into `eval/results/results.md`, every header labelled pre-gate, each row stating its baseline, and the BM25 row flagged as gated by the rare-token rule alone (research.md R-02, contracts/file-formats.md § 10)
+- [X] T067 [US4] Implement experiment E1 in `eval/run_all.py`: `fixed-800/150` versus `section` chunking with mode `dense` and `k=3` held constant, reporting **pre-gate** recall@3 and MRR, dev then test, with the varied variable named in the output (FR-037, research.md R-01). **Winner chosen from dev split only** (Constitution I) via `pick_winner_from_dev()`, never from test numbers.
+- [X] T068 [US4] Implement experiment E2 in `eval/run_all.py`: `bm25` versus `dense` versus `hybrid` on E1's winning chunking, **pre-gate**, with `R-BM25` and `R-Dense-naive` marked as the named baselines (FR-038)
+- [X] T069 [US4] Implement the comparison view in `eval/run_all.py` computing per-metric deltas against each row's baseline, and refusing to emit a table whose rows disagree on `split` or `corpus_sha` (data-model.md § 10). **Bug caught and fixed during implementation**: the first draft computed E2 deltas against a single test-split baseline value applied to dev rows too, silently mixing populations across splits (violates R-08). Fixed by keeping `baselines["R-BM25"]`/`["R-Dense-naive"]` per-split (`tests/test_run_all.py` covers the `_assert_comparable` guard).
+- [X] T070 [US4] Generate the E1 and E2 tables into `eval/results/results.md`, every header labelled pre-gate, each row stating its baseline, and the BM25 row flagged as gated by the rare-token rule alone (research.md R-02, contracts/file-formats.md § 10)
 
 **Checkpoint**: the chunking and retrieval claims in the report are backed by reproducible tables.
 **SC-010 met.**
+
+**Real measured outcome** (test split, pre-gate): E1 — `fixed` chunking wins on the dev split
+(ceiling effect, all modes 1.000 at n=8) and also outperforms `section` on test (0.942 vs 0.904
+recall@3); honestly reported even though the project's hypothesis favoured section-aligned chunking.
+E2 on the winning `fixed` chunking — `hybrid` beats both named baselines on test
+(recall@3 0.962 vs R-BM25 0.846 and R-Dense-naive 0.942).
 
 ---
 

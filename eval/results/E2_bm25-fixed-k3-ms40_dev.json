@@ -1,0 +1,238 @@
+{
+  "config": {
+    "experiment": "E2",
+    "name": "bm25 + fixed",
+    "split": "dev",
+    "mode": "bm25",
+    "chunk_strategy": "fixed",
+    "k": 3,
+    "min_score": 0.4,
+    "embed_model": "bge-m3",
+    "corpus_sha": "49b07d941e2b3e4b76a3fa0c7c94a434e6e5d5709952d25cb914acdf65252018",
+    "git_commit": "2d7000f"
+  },
+  "aggregate": {
+    "n_in_scope": 8,
+    "n_out_of_scope": 2,
+    "recall_at_3_pre": 1.0,
+    "mrr_pre": 0.875,
+    "recall_at_3_post": 0.375,
+    "mrr_post": 0.3125,
+    "oos_gate_accuracy": 1.0,
+    "false_refusal_rate": 0.625,
+    "by_difficulty": {
+      "easy": {
+        "recall_at_3_pre": 1.0,
+        "mrr_pre": 1.0,
+        "recall_at_3_post": 0.5,
+        "mrr_post": 0.5
+      },
+      "medium": {
+        "recall_at_3_pre": 1.0,
+        "mrr_pre": 0.75,
+        "recall_at_3_post": 0.5,
+        "mrr_post": 0.375
+      },
+      "hard": {
+        "recall_at_3_pre": 1.0,
+        "mrr_pre": 1.0,
+        "recall_at_3_post": 0.0,
+        "mrr_post": 0.0
+      },
+      "thai": {
+        "recall_at_3_pre": 1.0,
+        "mrr_pre": 1.0,
+        "recall_at_3_post": 0.0,
+        "mrr_post": 0.0
+      },
+      "mixed": {
+        "recall_at_3_pre": 0.0,
+        "mrr_pre": 0.0,
+        "recall_at_3_post": 0.0,
+        "mrr_post": 0.0
+      },
+      "oos": {
+        "gate_accuracy": 1.0
+      }
+    }
+  },
+  "cases": [
+    {
+      "case_id": "d01",
+      "difficulty": "easy",
+      "format": "st22_header",
+      "retrieved": [
+        {
+          "doc_id": "mem_tsv_tnew_page_alloc",
+          "chunk_id": "mem_tsv_tnew_page_alloc#f0",
+          "score": 47.54505818335981,
+          "rank": 1
+        },
+        {
+          "doc_id": "auth_missing",
+          "chunk_id": "auth_missing#f0",
+          "score": 13.376071491084096,
+          "rank": 2
+        },
+        {
+          "doc_id": "timeout_dialog",
+          "chunk_id": "timeout_dialog#f0",
+          "score": 11.274755379361615,
+          "rank": 3
+        }
+      ],
+      "gated_out": false,
+      "recall_at_k_pre": 1.0,
+      "recall_at_k_post": 1.0,
+      "rr_pre": 1.0,
+      "rr_post": 1.0,
+      "correct_gate": true
+    },
+    {
+      "case_id": "d02",
+      "difficulty": "hard",
+      "format": "user_email",
+      "retrieved": [],
+      "gated_out": true,
+      "recall_at_k_pre": 1.0,
+      "recall_at_k_post": 0.0,
+      "rr_pre": 1.0,
+      "rr_post": 0.0,
+      "correct_gate": false
+    },
+    {
+      "case_id": "d03",
+      "difficulty": "medium",
+      "format": "sm37_joblog",
+      "retrieved": [
+        {
+          "doc_id": "user_locked",
+          "chunk_id": "user_locked#f0",
+          "score": 27.175525831585738,
+          "rank": 1
+        },
+        {
+          "doc_id": "job_cancelled",
+          "chunk_id": "job_cancelled#f0",
+          "score": 26.505609308961954,
+          "rank": 2
+        },
+        {
+          "doc_id": "job_stuck_ready_released",
+          "chunk_id": "job_stuck_ready_released#f0",
+          "score": 12.540443242110522,
+          "rank": 3
+        }
+      ],
+      "gated_out": false,
+      "recall_at_k_pre": 1.0,
+      "recall_at_k_post": 1.0,
+      "rr_pre": 0.5,
+      "rr_post": 0.5,
+      "correct_gate": true
+    },
+    {
+      "case_id": "d04",
+      "difficulty": "medium",
+      "format": "user_email",
+      "retrieved": [
+        {
+          "doc_id": "lock_old_entries",
+          "chunk_id": "lock_old_entries#f0",
+          "score": 31.617863096195187,
+          "rank": 1
+        },
+        {
+          "doc_id": "transport_rc8",
+          "chunk_id": "transport_rc8#f2",
+          "score": 13.337036714233758,
+          "rank": 2
+        },
+        {
+          "doc_id": "auth_missing",
+          "chunk_id": "auth_missing#f1",
+          "score": 10.10085051862939,
+          "rank": 3
+        }
+      ],
+      "gated_out": false,
+      "recall_at_k_pre": 1.0,
+      "recall_at_k_post": 1.0,
+      "rr_pre": 1.0,
+      "rr_post": 1.0,
+      "correct_gate": true
+    },
+    {
+      "case_id": "d05",
+      "difficulty": "easy",
+      "format": "stms_log",
+      "retrieved": [],
+      "gated_out": true,
+      "recall_at_k_pre": 1.0,
+      "recall_at_k_post": 0.0,
+      "rr_pre": 1.0,
+      "rr_post": 0.0,
+      "correct_gate": false
+    },
+    {
+      "case_id": "d06",
+      "difficulty": "medium",
+      "format": "sm59_test",
+      "retrieved": [],
+      "gated_out": true,
+      "recall_at_k_pre": 1.0,
+      "recall_at_k_post": 0.0,
+      "rr_pre": 1.0,
+      "rr_post": 0.0,
+      "correct_gate": false
+    },
+    {
+      "case_id": "d07",
+      "difficulty": "hard",
+      "format": "chat_thai",
+      "retrieved": [],
+      "gated_out": true,
+      "recall_at_k_pre": 1.0,
+      "recall_at_k_post": 0.0,
+      "rr_pre": 1.0,
+      "rr_post": 0.0,
+      "correct_gate": false
+    },
+    {
+      "case_id": "d08",
+      "difficulty": "medium",
+      "format": "user_email",
+      "retrieved": [],
+      "gated_out": true,
+      "recall_at_k_pre": 1.0,
+      "recall_at_k_post": 0.0,
+      "rr_pre": 0.5,
+      "rr_post": 0.0,
+      "correct_gate": false
+    },
+    {
+      "case_id": "d09",
+      "difficulty": "medium",
+      "format": "hana_alert",
+      "retrieved": [],
+      "gated_out": true,
+      "recall_at_k_pre": null,
+      "recall_at_k_post": null,
+      "rr_pre": null,
+      "rr_post": null,
+      "correct_gate": true
+    },
+    {
+      "case_id": "d10",
+      "difficulty": "medium",
+      "format": "other",
+      "retrieved": [],
+      "gated_out": true,
+      "recall_at_k_pre": null,
+      "recall_at_k_post": null,
+      "rr_pre": null,
+      "rr_post": null,
+      "correct_gate": true
+    }
+  ]
+}

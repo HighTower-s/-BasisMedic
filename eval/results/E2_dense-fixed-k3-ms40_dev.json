@@ -1,0 +1,371 @@
+{
+  "config": {
+    "experiment": "E2",
+    "name": "R-Dense-naive",
+    "split": "dev",
+    "mode": "dense",
+    "chunk_strategy": "fixed",
+    "k": 3,
+    "min_score": 0.4,
+    "embed_model": "bge-m3",
+    "corpus_sha": "49b07d941e2b3e4b76a3fa0c7c94a434e6e5d5709952d25cb914acdf65252018",
+    "git_commit": "2d7000f"
+  },
+  "aggregate": {
+    "n_in_scope": 8,
+    "n_out_of_scope": 2,
+    "recall_at_3_pre": 1.0,
+    "mrr_pre": 1.0,
+    "recall_at_3_post": 1.0,
+    "mrr_post": 1.0,
+    "oos_gate_accuracy": 0.0,
+    "false_refusal_rate": 0.0,
+    "by_difficulty": {
+      "easy": {
+        "recall_at_3_pre": 1.0,
+        "mrr_pre": 1.0,
+        "recall_at_3_post": 1.0,
+        "mrr_post": 1.0
+      },
+      "medium": {
+        "recall_at_3_pre": 1.0,
+        "mrr_pre": 1.0,
+        "recall_at_3_post": 1.0,
+        "mrr_post": 1.0
+      },
+      "hard": {
+        "recall_at_3_pre": 1.0,
+        "mrr_pre": 1.0,
+        "recall_at_3_post": 1.0,
+        "mrr_post": 1.0
+      },
+      "thai": {
+        "recall_at_3_pre": 1.0,
+        "mrr_pre": 1.0,
+        "recall_at_3_post": 1.0,
+        "mrr_post": 1.0
+      },
+      "mixed": {
+        "recall_at_3_pre": 0.0,
+        "mrr_pre": 0.0,
+        "recall_at_3_post": 0.0,
+        "mrr_post": 0.0
+      },
+      "oos": {
+        "gate_accuracy": 0.0
+      }
+    }
+  },
+  "cases": [
+    {
+      "case_id": "d01",
+      "difficulty": "easy",
+      "format": "st22_header",
+      "retrieved": [
+        {
+          "doc_id": "mem_tsv_tnew_page_alloc",
+          "chunk_id": "mem_tsv_tnew_page_alloc#f0",
+          "score": 0.7174987196922302,
+          "rank": 1
+        },
+        {
+          "doc_id": "lock_table_overflow",
+          "chunk_id": "lock_table_overflow#f0",
+          "score": 0.5804563760757446,
+          "rank": 2
+        },
+        {
+          "doc_id": "update_terminated",
+          "chunk_id": "update_terminated#f1",
+          "score": 0.5460885763168335,
+          "rank": 3
+        }
+      ],
+      "gated_out": false,
+      "recall_at_k_pre": 1.0,
+      "recall_at_k_post": 1.0,
+      "rr_pre": 1.0,
+      "rr_post": 1.0,
+      "correct_gate": true
+    },
+    {
+      "case_id": "d02",
+      "difficulty": "hard",
+      "format": "user_email",
+      "retrieved": [
+        {
+          "doc_id": "timeout_dialog",
+          "chunk_id": "timeout_dialog#f0",
+          "score": 0.7058178186416626,
+          "rank": 1
+        },
+        {
+          "doc_id": "mem_system_no_roll",
+          "chunk_id": "mem_system_no_roll#f3",
+          "score": 0.5972488522529602,
+          "rank": 2
+        },
+        {
+          "doc_id": "timeout_long_running_wp",
+          "chunk_id": "timeout_long_running_wp#f0",
+          "score": 0.5795918107032776,
+          "rank": 3
+        }
+      ],
+      "gated_out": false,
+      "recall_at_k_pre": 1.0,
+      "recall_at_k_post": 1.0,
+      "rr_pre": 1.0,
+      "rr_post": 1.0,
+      "correct_gate": true
+    },
+    {
+      "case_id": "d03",
+      "difficulty": "medium",
+      "format": "sm37_joblog",
+      "retrieved": [
+        {
+          "doc_id": "job_cancelled",
+          "chunk_id": "job_cancelled#f2",
+          "score": 0.6219058036804199,
+          "rank": 1
+        },
+        {
+          "doc_id": "user_locked",
+          "chunk_id": "user_locked#f0",
+          "score": 0.6062378287315369,
+          "rank": 2
+        },
+        {
+          "doc_id": "auth_missing",
+          "chunk_id": "auth_missing#f0",
+          "score": 0.5865947008132935,
+          "rank": 3
+        }
+      ],
+      "gated_out": false,
+      "recall_at_k_pre": 1.0,
+      "recall_at_k_post": 1.0,
+      "rr_pre": 1.0,
+      "rr_post": 1.0,
+      "correct_gate": true
+    },
+    {
+      "case_id": "d04",
+      "difficulty": "medium",
+      "format": "user_email",
+      "retrieved": [
+        {
+          "doc_id": "lock_old_entries",
+          "chunk_id": "lock_old_entries#f0",
+          "score": 0.7328740358352661,
+          "rank": 1
+        },
+        {
+          "doc_id": "user_locked",
+          "chunk_id": "user_locked#f2",
+          "score": 0.5465971231460571,
+          "rank": 2
+        },
+        {
+          "doc_id": "lock_table_overflow",
+          "chunk_id": "lock_table_overflow#f2",
+          "score": 0.541365385055542,
+          "rank": 3
+        }
+      ],
+      "gated_out": false,
+      "recall_at_k_pre": 1.0,
+      "recall_at_k_post": 1.0,
+      "rr_pre": 1.0,
+      "rr_post": 1.0,
+      "correct_gate": true
+    },
+    {
+      "case_id": "d05",
+      "difficulty": "easy",
+      "format": "stms_log",
+      "retrieved": [
+        {
+          "doc_id": "transport_rc8",
+          "chunk_id": "transport_rc8#f0",
+          "score": 0.6422995328903198,
+          "rank": 1
+        },
+        {
+          "doc_id": "transport_rc12_or_stuck",
+          "chunk_id": "transport_rc12_or_stuck#f0",
+          "score": 0.6125100255012512,
+          "rank": 2
+        },
+        {
+          "doc_id": "rfc_trfc_queue",
+          "chunk_id": "rfc_trfc_queue#f0",
+          "score": 0.49166929721832275,
+          "rank": 3
+        }
+      ],
+      "gated_out": false,
+      "recall_at_k_pre": 1.0,
+      "recall_at_k_post": 1.0,
+      "rr_pre": 1.0,
+      "rr_post": 1.0,
+      "correct_gate": true
+    },
+    {
+      "case_id": "d06",
+      "difficulty": "medium",
+      "format": "sm59_test",
+      "retrieved": [
+        {
+          "doc_id": "rfc_connection_failed",
+          "chunk_id": "rfc_connection_failed#f0",
+          "score": 0.6469031572341919,
+          "rank": 1
+        },
+        {
+          "doc_id": "timeout_dialog",
+          "chunk_id": "timeout_dialog#f3",
+          "score": 0.5240626931190491,
+          "rank": 2
+        },
+        {
+          "doc_id": "transport_rc12_or_stuck",
+          "chunk_id": "transport_rc12_or_stuck#f0",
+          "score": 0.5207964181900024,
+          "rank": 3
+        }
+      ],
+      "gated_out": false,
+      "recall_at_k_pre": 1.0,
+      "recall_at_k_post": 1.0,
+      "rr_pre": 1.0,
+      "rr_post": 1.0,
+      "correct_gate": true
+    },
+    {
+      "case_id": "d07",
+      "difficulty": "hard",
+      "format": "chat_thai",
+      "retrieved": [
+        {
+          "doc_id": "update_terminated",
+          "chunk_id": "update_terminated#f0",
+          "score": 0.7041687965393066,
+          "rank": 1
+        },
+        {
+          "doc_id": "lock_old_entries",
+          "chunk_id": "lock_old_entries#f0",
+          "score": 0.6046392917633057,
+          "rank": 2
+        },
+        {
+          "doc_id": "user_locked",
+          "chunk_id": "user_locked#f0",
+          "score": 0.6022255420684814,
+          "rank": 3
+        }
+      ],
+      "gated_out": false,
+      "recall_at_k_pre": 1.0,
+      "recall_at_k_post": 1.0,
+      "rr_pre": 1.0,
+      "rr_post": 1.0,
+      "correct_gate": true
+    },
+    {
+      "case_id": "d08",
+      "difficulty": "medium",
+      "format": "user_email",
+      "retrieved": [
+        {
+          "doc_id": "user_locked",
+          "chunk_id": "user_locked#f0",
+          "score": 0.6983509063720703,
+          "rank": 1
+        },
+        {
+          "doc_id": "auth_missing",
+          "chunk_id": "auth_missing#f0",
+          "score": 0.6420913934707642,
+          "rank": 2
+        },
+        {
+          "doc_id": "lock_old_entries",
+          "chunk_id": "lock_old_entries#f0",
+          "score": 0.6105034351348877,
+          "rank": 3
+        }
+      ],
+      "gated_out": false,
+      "recall_at_k_pre": 1.0,
+      "recall_at_k_post": 1.0,
+      "rr_pre": 1.0,
+      "rr_post": 1.0,
+      "correct_gate": true
+    },
+    {
+      "case_id": "d09",
+      "difficulty": "medium",
+      "format": "hana_alert",
+      "retrieved": [
+        {
+          "doc_id": "mem_tsv_tnew_page_alloc",
+          "chunk_id": "mem_tsv_tnew_page_alloc#f1",
+          "score": 0.5528072118759155,
+          "rank": 1
+        },
+        {
+          "doc_id": "mem_system_no_roll",
+          "chunk_id": "mem_system_no_roll#f0",
+          "score": 0.5008563995361328,
+          "rank": 2
+        },
+        {
+          "doc_id": "lock_table_overflow",
+          "chunk_id": "lock_table_overflow#f0",
+          "score": 0.5005772113800049,
+          "rank": 3
+        }
+      ],
+      "gated_out": false,
+      "recall_at_k_pre": null,
+      "recall_at_k_post": null,
+      "rr_pre": null,
+      "rr_post": null,
+      "correct_gate": false
+    },
+    {
+      "case_id": "d10",
+      "difficulty": "medium",
+      "format": "other",
+      "retrieved": [
+        {
+          "doc_id": "update_terminated",
+          "chunk_id": "update_terminated#f0",
+          "score": 0.5771983861923218,
+          "rank": 1
+        },
+        {
+          "doc_id": "mem_system_no_roll",
+          "chunk_id": "mem_system_no_roll#f3",
+          "score": 0.5559780597686768,
+          "rank": 2
+        },
+        {
+          "doc_id": "update_deactivated",
+          "chunk_id": "update_deactivated#f0",
+          "score": 0.5459985136985779,
+          "rank": 3
+        }
+      ],
+      "gated_out": false,
+      "recall_at_k_pre": null,
+      "recall_at_k_post": null,
+      "rr_pre": null,
+      "rr_post": null,
+      "correct_gate": false
+    }
+  ]
+}

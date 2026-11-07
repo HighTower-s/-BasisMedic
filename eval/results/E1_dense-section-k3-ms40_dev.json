@@ -1,0 +1,371 @@
+{
+  "config": {
+    "experiment": "E1",
+    "name": "dense + section",
+    "split": "dev",
+    "mode": "dense",
+    "chunk_strategy": "section",
+    "k": 3,
+    "min_score": 0.4,
+    "embed_model": "bge-m3",
+    "corpus_sha": "49b07d941e2b3e4b76a3fa0c7c94a434e6e5d5709952d25cb914acdf65252018",
+    "git_commit": "2d7000f"
+  },
+  "aggregate": {
+    "n_in_scope": 8,
+    "n_out_of_scope": 2,
+    "recall_at_3_pre": 1.0,
+    "mrr_pre": 1.0,
+    "recall_at_3_post": 1.0,
+    "mrr_post": 1.0,
+    "oos_gate_accuracy": 0.0,
+    "false_refusal_rate": 0.0,
+    "by_difficulty": {
+      "easy": {
+        "recall_at_3_pre": 1.0,
+        "mrr_pre": 1.0,
+        "recall_at_3_post": 1.0,
+        "mrr_post": 1.0
+      },
+      "medium": {
+        "recall_at_3_pre": 1.0,
+        "mrr_pre": 1.0,
+        "recall_at_3_post": 1.0,
+        "mrr_post": 1.0
+      },
+      "hard": {
+        "recall_at_3_pre": 1.0,
+        "mrr_pre": 1.0,
+        "recall_at_3_post": 1.0,
+        "mrr_post": 1.0
+      },
+      "thai": {
+        "recall_at_3_pre": 1.0,
+        "mrr_pre": 1.0,
+        "recall_at_3_post": 1.0,
+        "mrr_post": 1.0
+      },
+      "mixed": {
+        "recall_at_3_pre": 0.0,
+        "mrr_pre": 0.0,
+        "recall_at_3_post": 0.0,
+        "mrr_post": 0.0
+      },
+      "oos": {
+        "gate_accuracy": 0.0
+      }
+    }
+  },
+  "cases": [
+    {
+      "case_id": "d01",
+      "difficulty": "easy",
+      "format": "st22_header",
+      "retrieved": [
+        {
+          "doc_id": "mem_tsv_tnew_page_alloc",
+          "chunk_id": "mem_tsv_tnew_page_alloc#symptoms",
+          "score": 0.79889976978302,
+          "rank": 1
+        },
+        {
+          "doc_id": "lock_table_overflow",
+          "chunk_id": "lock_table_overflow#fix",
+          "score": 0.5611821413040161,
+          "rank": 2
+        },
+        {
+          "doc_id": "mem_system_no_roll",
+          "chunk_id": "mem_system_no_roll#cause",
+          "score": 0.5568691492080688,
+          "rank": 3
+        }
+      ],
+      "gated_out": false,
+      "recall_at_k_pre": 1.0,
+      "recall_at_k_post": 1.0,
+      "rr_pre": 1.0,
+      "rr_post": 1.0,
+      "correct_gate": true
+    },
+    {
+      "case_id": "d02",
+      "difficulty": "hard",
+      "format": "user_email",
+      "retrieved": [
+        {
+          "doc_id": "timeout_dialog",
+          "chunk_id": "timeout_dialog#symptoms",
+          "score": 0.7232743501663208,
+          "rank": 1
+        },
+        {
+          "doc_id": "timeout_long_running_wp",
+          "chunk_id": "timeout_long_running_wp#escalate",
+          "score": 0.6129886507987976,
+          "rank": 2
+        },
+        {
+          "doc_id": "mem_system_no_roll",
+          "chunk_id": "mem_system_no_roll#escalate",
+          "score": 0.6117774248123169,
+          "rank": 3
+        }
+      ],
+      "gated_out": false,
+      "recall_at_k_pre": 1.0,
+      "recall_at_k_post": 1.0,
+      "rr_pre": 1.0,
+      "rr_post": 1.0,
+      "correct_gate": true
+    },
+    {
+      "case_id": "d03",
+      "difficulty": "medium",
+      "format": "sm37_joblog",
+      "retrieved": [
+        {
+          "doc_id": "job_cancelled",
+          "chunk_id": "job_cancelled#references",
+          "score": 0.6497710943222046,
+          "rank": 1
+        },
+        {
+          "doc_id": "job_stuck_ready_released",
+          "chunk_id": "job_stuck_ready_released#references",
+          "score": 0.5956250429153442,
+          "rank": 2
+        },
+        {
+          "doc_id": "user_locked",
+          "chunk_id": "user_locked#symptoms",
+          "score": 0.594914436340332,
+          "rank": 3
+        }
+      ],
+      "gated_out": false,
+      "recall_at_k_pre": 1.0,
+      "recall_at_k_post": 1.0,
+      "rr_pre": 1.0,
+      "rr_post": 1.0,
+      "correct_gate": true
+    },
+    {
+      "case_id": "d04",
+      "difficulty": "medium",
+      "format": "user_email",
+      "retrieved": [
+        {
+          "doc_id": "lock_old_entries",
+          "chunk_id": "lock_old_entries#symptoms",
+          "score": 0.7180740833282471,
+          "rank": 1
+        },
+        {
+          "doc_id": "user_locked",
+          "chunk_id": "user_locked#fix",
+          "score": 0.563410758972168,
+          "rank": 2
+        },
+        {
+          "doc_id": "lock_table_overflow",
+          "chunk_id": "lock_table_overflow#fix",
+          "score": 0.5221506357192993,
+          "rank": 3
+        }
+      ],
+      "gated_out": false,
+      "recall_at_k_pre": 1.0,
+      "recall_at_k_post": 1.0,
+      "rr_pre": 1.0,
+      "rr_post": 1.0,
+      "correct_gate": true
+    },
+    {
+      "case_id": "d05",
+      "difficulty": "easy",
+      "format": "stms_log",
+      "retrieved": [
+        {
+          "doc_id": "transport_rc8",
+          "chunk_id": "transport_rc8#cause",
+          "score": 0.6306819915771484,
+          "rank": 1
+        },
+        {
+          "doc_id": "transport_rc12_or_stuck",
+          "chunk_id": "transport_rc12_or_stuck#cause",
+          "score": 0.5620319247245789,
+          "rank": 2
+        },
+        {
+          "doc_id": "update_deactivated",
+          "chunk_id": "update_deactivated#fix",
+          "score": 0.5085334181785583,
+          "rank": 3
+        }
+      ],
+      "gated_out": false,
+      "recall_at_k_pre": 1.0,
+      "recall_at_k_post": 1.0,
+      "rr_pre": 1.0,
+      "rr_post": 1.0,
+      "correct_gate": true
+    },
+    {
+      "case_id": "d06",
+      "difficulty": "medium",
+      "format": "sm59_test",
+      "retrieved": [
+        {
+          "doc_id": "rfc_connection_failed",
+          "chunk_id": "rfc_connection_failed#symptoms",
+          "score": 0.6675982475280762,
+          "rank": 1
+        },
+        {
+          "doc_id": "transport_rc12_or_stuck",
+          "chunk_id": "transport_rc12_or_stuck#check",
+          "score": 0.5692116618156433,
+          "rank": 2
+        },
+        {
+          "doc_id": "rfc_trfc_queue",
+          "chunk_id": "rfc_trfc_queue#references",
+          "score": 0.5551085472106934,
+          "rank": 3
+        }
+      ],
+      "gated_out": false,
+      "recall_at_k_pre": 1.0,
+      "recall_at_k_post": 1.0,
+      "rr_pre": 1.0,
+      "rr_post": 1.0,
+      "correct_gate": true
+    },
+    {
+      "case_id": "d07",
+      "difficulty": "hard",
+      "format": "chat_thai",
+      "retrieved": [
+        {
+          "doc_id": "update_terminated",
+          "chunk_id": "update_terminated#symptoms",
+          "score": 0.7179702520370483,
+          "rank": 1
+        },
+        {
+          "doc_id": "update_deactivated",
+          "chunk_id": "update_deactivated#symptoms",
+          "score": 0.6282328367233276,
+          "rank": 2
+        },
+        {
+          "doc_id": "user_locked",
+          "chunk_id": "user_locked#symptoms",
+          "score": 0.6070199012756348,
+          "rank": 3
+        }
+      ],
+      "gated_out": false,
+      "recall_at_k_pre": 1.0,
+      "recall_at_k_post": 1.0,
+      "rr_pre": 1.0,
+      "rr_post": 1.0,
+      "correct_gate": true
+    },
+    {
+      "case_id": "d08",
+      "difficulty": "medium",
+      "format": "user_email",
+      "retrieved": [
+        {
+          "doc_id": "user_locked",
+          "chunk_id": "user_locked#cause",
+          "score": 0.6873886585235596,
+          "rank": 1
+        },
+        {
+          "doc_id": "auth_missing",
+          "chunk_id": "auth_missing#symptoms",
+          "score": 0.6258354187011719,
+          "rank": 2
+        },
+        {
+          "doc_id": "lock_table_overflow",
+          "chunk_id": "lock_table_overflow#symptoms",
+          "score": 0.6160283088684082,
+          "rank": 3
+        }
+      ],
+      "gated_out": false,
+      "recall_at_k_pre": 1.0,
+      "recall_at_k_post": 1.0,
+      "rr_pre": 1.0,
+      "rr_post": 1.0,
+      "correct_gate": true
+    },
+    {
+      "case_id": "d09",
+      "difficulty": "medium",
+      "format": "hana_alert",
+      "retrieved": [
+        {
+          "doc_id": "lock_table_overflow",
+          "chunk_id": "lock_table_overflow#symptoms",
+          "score": 0.5159517526626587,
+          "rank": 1
+        },
+        {
+          "doc_id": "transport_rc12_or_stuck",
+          "chunk_id": "transport_rc12_or_stuck#escalate",
+          "score": 0.5098007917404175,
+          "rank": 2
+        },
+        {
+          "doc_id": "update_deactivated",
+          "chunk_id": "update_deactivated#escalate",
+          "score": 0.5082491040229797,
+          "rank": 3
+        }
+      ],
+      "gated_out": false,
+      "recall_at_k_pre": null,
+      "recall_at_k_post": null,
+      "rr_pre": null,
+      "rr_post": null,
+      "correct_gate": false
+    },
+    {
+      "case_id": "d10",
+      "difficulty": "medium",
+      "format": "other",
+      "retrieved": [
+        {
+          "doc_id": "mem_system_no_roll",
+          "chunk_id": "mem_system_no_roll#references",
+          "score": 0.5718902349472046,
+          "rank": 1
+        },
+        {
+          "doc_id": "update_terminated",
+          "chunk_id": "update_terminated#symptoms",
+          "score": 0.5701510906219482,
+          "rank": 2
+        },
+        {
+          "doc_id": "update_deactivated",
+          "chunk_id": "update_deactivated#references",
+          "score": 0.5472298860549927,
+          "rank": 3
+        }
+      ],
+      "gated_out": false,
+      "recall_at_k_pre": null,
+      "recall_at_k_post": null,
+      "rr_pre": null,
+      "rr_post": null,
+      "correct_gate": false
+    }
+  ]
+}

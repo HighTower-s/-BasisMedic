@@ -6,6 +6,6 @@
   "n_runbooks": 16,
   "n_chunks": 96,
   "n_vectors": 96,
-  "built_at": "2026-11-07T15:07:45Z",
-  "git_commit": "0b199f5"
+  "built_at": "2026-11-07T15:24:26Z",
+  "git_commit": "2d7000f"
 }
