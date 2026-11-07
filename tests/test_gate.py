@@ -1,12 +1,14 @@
 import json
 
+import numpy as np
 import pytest
 
+import app.llm as llm_module
 from app.retrieval.chunk import chunk_by_section
 from app.retrieval.runbooks import load_tcodes, parse_runbook
 from app.retrieval.search import InvalidQueryError, search
 from app.retrieval.store import Store
-from app.schemas import IndexManifest
+from app.schemas import Chunk, IndexManifest
 
 
 def _store(fake_corpus) -> Store:
@@ -69,3 +71,70 @@ def test_invalid_query_whitespace_only_raises(fake_corpus):
     store = _store(fake_corpus)
     with pytest.raises(InvalidQueryError):
         search("            ", mode="bm25", store=store)
+
+
+def _two_chunk_dense_store():
+    """Two chunks with hand-picked unit vectors so cosine similarity is exact."""
+    chunk_a = Chunk(
+        chunk_id="mem_alloc_fail#symptoms", doc_id="mem_alloc_fail", category="memory_dump",
+        section="Symptoms", title="mem_alloc_fail", text="TSV_TNEW_PAGE_ALLOC_FAILED dump text",
+    )
+    chunk_b = Chunk(
+        chunk_id="stale_lock#symptoms", doc_id="stale_lock", category="lock_issue",
+        section="Symptoms", title="stale_lock", text="a document is locked by SM12",
+    )
+    matrix = np.array([[1.0, 0.0], [0.0, 1.0]], dtype=np.float32)
+    manifest = IndexManifest(
+        corpus_sha="dummy", chunk_strategy="section", embed_model="test", embed_dim=2,
+        n_runbooks=2, n_chunks=2, n_vectors=2, built_at="2026-01-01T00:00:00Z", git_commit=None,
+    )
+    tcodes = {"SM12": "Lock Entries - display and delete SAP enqueue locks"}
+    return Store(chunks=[chunk_a, chunk_b], manifest=manifest, embeddings=matrix, tcodes=tcodes)
+
+
+def _patch_embed(monkeypatch, vector: list[float]) -> None:
+    monkeypatch.setattr(llm_module, "embed", lambda texts, model=None: [vector for _ in texts])
+
+
+def test_dense_gate_low_cosine_and_no_rare_token_returns_empty(monkeypatch):
+    store = _two_chunk_dense_store()
+    _patch_embed(monkeypatch, [-1.0, 0.0])  # opposite of chunk_a, orthogonal-ish to chunk_b
+    hits = search(
+        "the system reported a general issue with no specific code",
+        mode="dense", k=3, min_score=0.5, store=store,
+    )
+    assert hits == []
+
+
+def test_dense_gate_low_cosine_but_rare_token_admits_results(monkeypatch):
+    store = _two_chunk_dense_store()
+    _patch_embed(monkeypatch, [-1.0, 0.0])
+    hits = search(
+        "please check SM12 right away for the issue",
+        mode="dense", k=3, min_score=0.5, store=store,
+    )
+    assert len(hits) >= 1
+
+
+def test_dense_gate_high_cosine_admits_regardless_of_rare_tokens(monkeypatch):
+    store = _two_chunk_dense_store()
+    _patch_embed(monkeypatch, [1.0, 0.0])  # matches chunk_a exactly
+    hits = search(
+        "a completely generic query with no special terms at all",
+        mode="dense", k=3, min_score=0.9, store=store,
+    )
+    assert len(hits) >= 1
+    assert hits[0].doc_id == "mem_alloc_fail"
+    assert hits[0].dense_score == pytest.approx(1.0)
+
+
+def test_hybrid_gate_reads_dense_score_not_fused_score(monkeypatch):
+    store = _two_chunk_dense_store()
+    _patch_embed(monkeypatch, [1.0, 0.0])
+    hits = search(
+        "a completely generic query with no special terms at all",
+        mode="hybrid", k=3, min_score=0.9, store=store,
+    )
+    assert len(hits) >= 1
+    assert hits[0].dense_score == pytest.approx(1.0)
+    assert hits[0].fused_score is not None

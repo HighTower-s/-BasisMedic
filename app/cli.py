@@ -83,8 +83,14 @@ def _cmd_search(args: argparse.Namespace) -> int:
         print(f"rare tokens : {sorted(store.rare_tokens(query.strip()))}", file=sys.stderr)
 
     if not hits:
+        from app.retrieval.search import rank
+
         print("NO_RELEVANT_RUNBOOK")
         print(f"Nothing in the corpus cleared the relevance floor (min_score={min_score}).")
+        if mode in ("dense", "hybrid"):
+            ranked = rank(query, mode=mode, store=store)
+            best = ranked[0].dense_score if ranked else None
+            print(f"  best dense score : {best:.3f}" if best is not None else "  best dense score : n/a")
         print("  rare tokens seen :", sorted(store.rare_tokens(query.strip())) or "none")
         print("This incident is not covered by the runbooks.")
         return 0

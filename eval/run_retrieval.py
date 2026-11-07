@@ -25,6 +25,18 @@ def _agg_recall(results: list[dict]) -> dict:
     }
 
 
+def assert_resolvable_citations(case_results: list[dict], store: Store) -> None:
+    """Every returned chunk_id must resolve to real corpus text (FR-010, SC-005)."""
+    known_ids = {c.chunk_id for c in store.chunks}
+    for cr in case_results:
+        for item in cr["retrieved"]:
+            if item["chunk_id"] not in known_ids:
+                raise AssertionError(
+                    f"case {cr['case_id']}: chunk_id {item['chunk_id']!r} does not resolve "
+                    "to any chunk in the loaded index"
+                )
+
+
 def run_config(
     *,
     split: str,
@@ -120,6 +132,8 @@ def run_config(
 
     for cr in case_results:
         del cr["_case"]
+
+    assert_resolvable_citations(case_results, store)
 
     return {
         "config": {

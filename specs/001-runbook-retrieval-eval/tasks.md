@@ -207,25 +207,36 @@ HANA log-volume-full alert and get `NO_RELEVANT_RUNBOOK` with zero hits and exit
 
 ### Tests for User Story 3
 
-- [ ] T054 [P] [US3] Write `tests/test_llm_cache.py` with a mocked OpenAI client: input order preserved (`data[i] ↔ input[i]`), `len(vector) == 1024` asserted, batching, a second call served entirely from `data/cache/` with zero client calls, and gateway errors surfacing as `UpstreamError`
-- [ ] T055 [P] [US3] Write `tests/test_fusion.py`: RRF `Σ 1/(60 + rank)` against hand-computed ranks, and correctness when the dense list is empty, when the BM25 list is empty (the normal Thai case — research.md R-05), and when both are
-- [ ] T056 [P] [US3] Extend `tests/test_gate.py` with the dense and hybrid branches: low cosine plus no rare token returns `[]`; low cosine plus a rare token admits results; high cosine admits regardless; and the gate reads `dense_score`, never the RRF score (research.md R-02)
+- [X] T054 [P] [US3] Write `tests/test_llm_cache.py` with a mocked OpenAI client: input order preserved (`data[i] ↔ input[i]`), `len(vector) == 1024` asserted, batching, a second call served entirely from `data/cache/` with zero client calls, and gateway errors surfacing as `UpstreamError`
+- [X] T055 [P] [US3] Write `tests/test_fusion.py`: RRF `Σ 1/(60 + rank)` against hand-computed ranks, and correctness when the dense list is empty, when the BM25 list is empty (the normal Thai case — research.md R-05), and when both are
+- [X] T056 [P] [US3] Extend `tests/test_gate.py` with the dense and hybrid branches: low cosine plus no rare token returns `[]`; low cosine plus a rare token admits results; high cosine admits regardless; and the gate reads `dense_score`, never the RRF score (research.md R-02)
 
 ### Implementation for User Story 3
 
-- [ ] T057 [US3] Implement `app/llm.py:embed(texts)` as the **only** gateway caller in the project (Constitution VI): `OpenAI()` against `OPENAI_BASE_URL` with model `bge-m3`, batched, preserving input order, asserting `len(vector) == 1024`, wrapping SDK and proxy failures in `UpstreamError`
-- [ ] T058 [US3] Add the disk cache to `app/llm.py`: key `sha256(f"{model}|{text}")` under `data/cache/`, written as `{"model","dim","vector"}` JSON, consulted before every call, reporting hit/miss counts to the caller for the ingest summary (research.md R-09, FR-036)
-- [ ] T059 [US3] Add the embedding step to `app/retrieval/ingest.py`: embed all chunk texts, L2-normalise row-wise, write `float32` `embeddings.npy` aligned to `chunks.jsonl` line order, and populate `embed_model`, `embed_dim`, `n_vectors` in the manifest (contracts/file-formats.md §§ 4, 5)
-- [ ] T060 [US3] Add cosine search to `app/retrieval/store.py`: a single `numpy` dot product of the normalised query vector against the normalised matrix — brute force, no index structure (Constitution VI)
-- [ ] T061 [US3] Add `dense` mode to `app/retrieval/search.py`, embedding the normalised query through `app.llm.embed` and populating `Hit.dense_score`
-- [ ] T062 [US3] Implement `fuse_rrf(dense_ranked, bm25_ranked, k=60)` in `app/retrieval/search.py`, fusing over **ranks** not raw scores, tolerant of an empty input list (research.md R-05)
-- [ ] T063 [US3] Add `hybrid` mode to `app/retrieval/search.py`, populating `fused_score` alongside both component scores so the gate can read the cosine
-- [ ] T064 [US3] Implement the `dense`/`hybrid` gate in `app/retrieval/search.py`: return `[]` when dense top-1 cosine `< min_score` **and** `rare_tokens(query)` is empty (FR-018, research.md R-02); add stable tie-breaking on `chunk_id` for equal scores (contracts/search.md guarantee 6)
-- [ ] T065 [US3] Implement the refusal output in `app/cli.py`: `NO_RELEVANT_RUNBOOK`, the floor used, the best dense score, the rare tokens seen, the "not covered by the runbooks" line, and **exit code 0** — a correct refusal is a success (FR-018, SC-008)
-- [ ] T066 [US3] Add a citation-resolvability check to `eval/run_retrieval.py` asserting every returned `chunk_id` resolves to existing corpus text, and run it across both splits to confirm zero dangling addresses (FR-010, SC-005)
+- [X] T057 [US3] Implement `app/llm.py:embed(texts)` as the **only** gateway caller in the project (Constitution VI): `OpenAI()` against `OPENAI_BASE_URL` with model `bge-m3`, batched, preserving input order, asserting `len(vector) == 1024`, wrapping SDK and proxy failures in `UpstreamError`
+- [X] T058 [US3] Add the disk cache to `app/llm.py`: key `sha256(f"{model}|{text}")` under `data/cache/`, written as `{"model","dim","vector"}` JSON, consulted before every call, reporting hit/miss counts to the caller for the ingest summary (research.md R-09, FR-036)
+- [X] T059 [US3] Add the embedding step to `app/retrieval/ingest.py`: embed all chunk texts, L2-normalise row-wise, write `float32` `embeddings.npy` aligned to `chunks.jsonl` line order, and populate `embed_model`, `embed_dim`, `n_vectors` in the manifest (contracts/file-formats.md §§ 4, 5). **Verified live**: ran against the real gateway — first build `96 vectors, dim 1024 (cache: 0 hit, 96 miss)`, rebuild `96 hit, 0 miss`, confirming the cache (T058) actually works end to end, not just under a mock.
+- [X] T060 [US3] Add cosine search to `app/retrieval/store.py`: a single `numpy` dot product of the normalised query vector against the normalised matrix — brute force, no index structure (Constitution VI)
+- [X] T061 [US3] Add `dense` mode to `app/retrieval/search.py`, embedding the normalised query through `app.llm.embed` and populating `Hit.dense_score`
+- [X] T062 [US3] Implement `fuse_rrf(dense_ranked, bm25_ranked, k=60)` in `app/retrieval/search.py`, fusing over **ranks** not raw scores, tolerant of an empty input list (research.md R-05)
+- [X] T063 [US3] Add `hybrid` mode to `app/retrieval/search.py`, populating `fused_score` alongside both component scores so the gate can read the cosine
+- [X] T064 [US3] Implement the `dense`/`hybrid` gate in `app/retrieval/search.py`: return `[]` when dense top-1 cosine `< min_score` **and** `rare_tokens(query)` is empty (FR-018, research.md R-02); add stable tie-breaking on `chunk_id` for equal scores (contracts/search.md guarantee 6)
+- [X] T065 [US3] Implement the refusal output in `app/cli.py`: `NO_RELEVANT_RUNBOOK`, the floor used, the best dense score, the rare tokens seen, the "not covered by the runbooks" line, and **exit code 0** — a correct refusal is a success (FR-018, SC-008)
+- [X] T066 [US3] Add a citation-resolvability check to `eval/run_retrieval.py` asserting every returned `chunk_id` resolves to existing corpus text, and run it across both splits to confirm zero dangling addresses (FR-010, SC-005)
 
 **Checkpoint**: all three modes work; cited hits resolve; uncovered logs are refused explicitly.
 **SC-005 and SC-008 met; all three P1 stories complete — this is the demonstrable MVP.**
+
+**Finding surfaced during live smoke-testing (honest reporting, Principle II — not a code defect)**:
+the default `MIN_SCORE=0.40` from `.env.example` is explicitly documented as a placeholder pending
+the E3 dev-set sweep (Phase 7 / US5). Tested live against the real gateway, an out-of-scope HANA
+log-volume-full query was **not** refused in `hybrid`/`dense` mode at this default — its top-1 dense
+cosine (0.528) cleared 0.40, because "database/space/full" vocabulary overlaps genuinely in-scope
+runbooks (lock/update-error escalation text). This is exactly the scenario research.md R-02 and the
+spec's "Out-of-scope log that looks in-scope" edge case anticipate, and exactly why E3 exists — it is
+not a Phase 5 defect to fix by hand-picking a threshold now, which would violate Constitution I
+(dev-set-only tuning). Phase 7 (US5) must pick a defensible floor from the dev sweep before this
+query will be refused by default.
 
 ---
 
