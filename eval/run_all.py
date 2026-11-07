@@ -12,7 +12,13 @@ from pathlib import Path
 from app import config
 from app.retrieval.ingest import build_index
 from app.retrieval.store import Store
-from eval.run_retrieval import run_config, write_result
+from eval.run_retrieval import (
+    append_failures,
+    build_failure_records,
+    run_config,
+    truncate_failures,
+    write_result,
+)
 
 INDEX_DIRS = {
     "section": config.ROOT / "data" / "index",
@@ -270,6 +276,47 @@ def _render_headline_table(test_result: dict) -> str:
     return "\n".join(lines)
 
 
+def _render_verdict_and_limitations(e2_rows_test: list[dict], baselines: dict, n_failures: int) -> str:
+    hybrid_row = next(r for r in e2_rows_test if r["config"]["mode"] == "hybrid")
+    hybrid_recall = hybrid_row["aggregate"]["recall_at_3_pre"]
+    bm25_recall = baselines["R-BM25"]["test"]["aggregate"]["recall_at_3_pre"]
+    dense_naive_recall = baselines["R-Dense-naive"]["test"]["aggregate"]["recall_at_3_pre"]
+    beats_both = hybrid_recall > bm25_recall and hybrid_recall > dense_naive_recall
+    verdict = (
+        f"Hybrid retrieval ({hybrid_recall:.3f} recall@3 pre-gate, test split) "
+        + (
+            f"beats both named baselines (R-BM25={bm25_recall:.3f}, "
+            f"R-Dense-naive={dense_naive_recall:.3f})."
+            if beats_both
+            else (
+                f"does **not** beat both named baselines (R-BM25={bm25_recall:.3f}, "
+                f"R-Dense-naive={dense_naive_recall:.3f}) — stated plainly, not hidden (FR-044)."
+            )
+        )
+    )
+    return (
+        "### Verdict\n\n"
+        f"{verdict}\n\n"
+        f"`eval/results/failures.jsonl` records {n_failures} failing test case(s) for the "
+        "final headline configuration, each with expected-vs-retrieved detail and a "
+        "failure type.\n\n"
+        "### Limitations\n\n"
+        "- All case logs are **synthetic**, written by the author to resemble real SAP "
+        "Basis error formats — not sampled from a production system.\n"
+        "- The corpus covers 16 runbooks across 8 incident categories; any incident "
+        "outside those categories, or any incident this corpus simply does not "
+        "describe, has no chance of a correct answer regardless of retrieval quality.\n"
+        "- Single-author bias: runbook content, the eval-case labels, and the "
+        "difficulty tiers were all written by one person, who may unconsciously write "
+        "eval queries that resemble their own runbook phrasing more than a real "
+        "incident would.\n"
+        "- The `[A-Za-z0-9_/]+` BM25 tokenizer cannot segment Thai text (no inter-word "
+        "spaces), so Thai queries contribute **zero** BM25 tokens — the Thai slice in "
+        "the headline table is carried entirely by the dense/embedding side "
+        "(research.md R-05).\n"
+    )
+
+
 def _render_header(section_store: Store) -> str:
     manifest = section_store.manifest
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -310,6 +357,8 @@ def _update_env_example_defaults(mode: str, chunk_strategy: str, min_score: floa
 
 
 def main() -> int:
+    truncate_failures()  # FR-043: always created, truncated once per run_all invocation
+
     e1_by_split = run_e1()
     winning_strategy = pick_winner_from_dev(e1_by_split["dev"])
     print(f"E1 winner (from dev split): chunk_strategy={winning_strategy}")
@@ -342,6 +391,10 @@ def main() -> int:
     )
     write_result(headline, "test")
 
+    failure_records = build_failure_records("test", headline["cases"], headline["config"]["name"])
+    append_failures(failure_records)
+    print(f"failures.jsonl: {len(failure_records)} failing case(s) for the headline config")
+
     _update_env_example_defaults(winning_mode, winning_strategy, chosen_floor)
 
     section_store = get_store("section")
@@ -351,6 +404,7 @@ def main() -> int:
         _render_e2_table(e2_by_split["dev"] + e2_by_split["test"], baselines, winning_strategy),
         _render_e3_table(sweep_rows, chosen, sweep_name),
         _render_headline_table(headline),
+        _render_verdict_and_limitations(e2_by_split["test"], baselines, len(failure_records)),
     ]
     write_results_md(sections)
     print(f"wrote {RESULTS_MD}")

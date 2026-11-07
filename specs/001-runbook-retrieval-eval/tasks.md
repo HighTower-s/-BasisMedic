@@ -299,13 +299,24 @@ retrieved and a failure type.
 **Independent Test**: Force a failure with a deliberately high floor and confirm the affected cases
 appear once each with full detail and a failure type.
 
-- [ ] T075 [US6] Implement the `failures.jsonl` writer in `eval/run_retrieval.py` per data-model.md § 11: one record per wrong case with `case_id`, `config_name`, expected category and docs, `acceptable_docs` for context, `retrieved` in returned order, `failure_type`, and the case `note`; classify as `retrieval_miss` / `gate_false_refusal` / `gate_missed_oos` / `partial_recall` (FR-042)
-- [ ] T076 [US6] Truncate `eval/results/failures.jsonl` at the start of each `eval/run_all.py` invocation and always create it, even when empty (FR-043)
-- [ ] T077 [P] [US6] Write `tests/test_failures.py` asserting a case retrieving only `acceptable_docs` is recorded as `retrieval_miss` **only** when no `gold_doc` was found, and that matching an acceptable alternative is never itself a failure (FR-034)
-- [ ] T078 [US6] Generate the remaining `eval/results/results.md` sections: the run header (`corpus_sha`, commit, embed model, date, splits), the per-difficulty slices including the Thai and mixed rows, the verdict sentence stated plainly whether or not hybrid wins, and the Limitations block covering synthetic logs, the 16-runbook corpus, single-author bias, and Thai contributing nothing to BM25 (FR-044, SC-014, research.md R-05)
+- [X] T075 [US6] Implement the `failures.jsonl` writer in `eval/run_retrieval.py` per data-model.md § 11: one record per wrong case with `case_id`, `config_name`, expected category and docs, `acceptable_docs` for context, `retrieved` in returned order, `failure_type`, and the case `note`; classify as `retrieval_miss` / `gate_false_refusal` / `gate_missed_oos` / `partial_recall` (FR-042). **Scope decision**: failures.jsonl records only the final headline configuration's test-split run (not every E1/E2/E3 experiment row) — SC-011's "count of failing cases is consistent with the reported metrics" is checked against the headline table, which would be ambiguous if every experiment contributed overlapping failure rows for the same cases.
+- [X] T076 [US6] Truncate `eval/results/failures.jsonl` at the start of each `eval/run_all.py` invocation and always create it, even when empty (FR-043)
+- [X] T077 [P] [US6] Write `tests/test_failures.py` asserting a case retrieving only `acceptable_docs` is recorded as `retrieval_miss` **only** when no `gold_doc` was found, and that matching an acceptable alternative is never itself a failure (FR-034)
+- [X] T078 [US6] Generate the remaining `eval/results/results.md` sections: the run header (`corpus_sha`, commit, embed model, date, splits), the per-difficulty slices including the Thai and mixed rows, the verdict sentence stated plainly whether or not hybrid wins, and the Limitations block covering synthetic logs, the 16-runbook corpus, single-author bias, and Thai contributing nothing to BM25 (FR-044, SC-014, research.md R-05)
 
 **Checkpoint**: every number in the report is traceable, and every failure is explained.
 **SC-011 and SC-014 met; all six stories complete.**
+
+**Real measured outcome**: 5 failing cases at the headline configuration (mode=hybrid,
+chunk_strategy=fixed, min_score=0.60) — 4 `gate_false_refusal` (in-scope hard cases with no
+exact error code/T-code, refused by the 0.60 floor) and 1 `retrieval_miss` (a Thai hard case
+with no T-code named). `4/26 = 0.154` matches the headline table's `false_refusal_rate`
+exactly, confirming count consistency (SC-011) mechanically rather than by inspection. The
+verdict sentence correctly reports hybrid beating both named baselines on test
+(0.962 vs R-BM25 0.846, R-Dense-naive 0.942). `tests/test_verdict.py` covers **both** branches
+of FR-044 directly (hybrid winning, and hybrid losing to a baseline and saying so plainly) with
+synthetic inputs, since the live run only ever exercises the winning branch — added after
+noticing the losing-branch code was otherwise unverified by anything in the suite.
 
 ---
 

@@ -3,7 +3,7 @@
 - corpus_sha: `49b07d941e2b3e4b76a3fa0c7c94a434e6e5d5709952d25cb914acdf65252018`
 - git commit: `2d7000f`
 - embed model: `bge-m3`
-- generated: 2026-11-07T15:33:18Z
+- generated: 2026-11-07T15:35:55Z
 - splits: dev (10 cases, tuning only), test (30 cases, reporting only)
 - all case logs are synthetic
 
@@ -73,3 +73,17 @@ Per-difficulty slices (post-gate recall@3):
 | thai | 0.667 | 0.500 |
 | mixed | 1.000 | 1.000 |
 | out-of-scope | gate_accuracy=1.000 | - |
+
+### Verdict
+
+Hybrid retrieval (0.962 recall@3 pre-gate, test split) beats both named baselines (R-BM25=0.846, R-Dense-naive=0.942).
+
+`eval/results/failures.jsonl` records 5 failing test case(s) for the final headline configuration, each with expected-vs-retrieved detail and a failure type.
+
+### Limitations
+
+- All case logs are **synthetic**, written by the author to resemble real SAP Basis error formats — not sampled from a production system.
+- The corpus covers 16 runbooks across 8 incident categories; any incident outside those categories, or any incident this corpus simply does not describe, has no chance of a correct answer regardless of retrieval quality.
+- Single-author bias: runbook content, the eval-case labels, and the difficulty tiers were all written by one person, who may unconsciously write eval queries that resemble their own runbook phrasing more than a real incident would.
+- The `[A-Za-z0-9_/]+` BM25 tokenizer cannot segment Thai text (no inter-word spaces), so Thai queries contribute **zero** BM25 tokens — the Thai slice in the headline table is carried entirely by the dense/embedding side (research.md R-05).
+

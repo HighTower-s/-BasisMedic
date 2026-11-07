@@ -4,13 +4,16 @@
 import argparse
 import json
 
+from pathlib import Path
+
 from app import config
 from app.retrieval.search import rank, search
 from app.retrieval.store import Store
 from eval.metrics import false_refusal_rate, gate_accuracy, mrr, recall_at_k
-from eval.schema import load_split
+from eval.schema import EvalCase, load_split
 
 RESULTS_DIR = config.ROOT / "eval" / "results"
+FAILURES_PATH = RESULTS_DIR / "failures.jsonl"
 
 
 def _agg_recall(results: list[dict]) -> dict:
@@ -163,6 +166,64 @@ def write_result(result: dict, split: str) -> None:
     slug = config_slug(cfg["mode"], cfg["chunk_strategy"], cfg["k"], cfg["min_score"])
     path = RESULTS_DIR / f"{cfg['experiment']}_{slug}_{split}.json"
     path.write_text(json.dumps(result, indent=2), encoding="utf-8")
+
+
+def classify_failure(case: EvalCase, case_result: dict) -> str | None:
+    """None means not a failure. A case retrieving only acceptable_docs is a
+    retrieval_miss only when no gold_doc was found — acceptable_docs never earn recall
+    credit (FR-034), so recall_at_k_post == 0.0 already captures exactly that case."""
+    if case.is_out_of_scope:
+        return None if case_result["gated_out"] else "gate_missed_oos"
+
+    if case_result["gated_out"]:
+        return "gate_false_refusal"
+    recall = case_result["recall_at_k_post"]
+    if recall == 0.0:
+        return "retrieval_miss"
+    if recall < 1.0:
+        return "partial_recall"
+    return None
+
+
+def build_failure_records(split: str, case_results: list[dict], config_name: str) -> list[dict]:
+    """data-model.md § 11. `case_results` is a result['cases'] list as returned by
+    run_config (post gold-doc/acceptable_doc disjointness already enforced by EvalCase)."""
+    cases_by_id = {c.id: c for c in load_split(split)}
+    records = []
+    for cr in case_results:
+        case = cases_by_id[cr["case_id"]]
+        failure_type = classify_failure(case, cr)
+        if failure_type is None:
+            continue
+        records.append(
+            {
+                "case_id": case.id,
+                "config_name": config_name,
+                "expected_category": case.gold_category,
+                "expected_docs": case.gold_docs,
+                "acceptable_docs": case.acceptable_docs,
+                "retrieved": cr["retrieved"],
+                "failure_type": failure_type,
+                "note": case.notes,
+            }
+        )
+    return records
+
+
+def truncate_failures(path: Path | None = None) -> None:
+    """FR-043: the file always exists, even when empty, and is truncated once per
+    eval/run_all.py invocation (not per experiment row)."""
+    path = path or FAILURES_PATH
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("", encoding="utf-8")
+
+
+def append_failures(records: list[dict], path: Path | None = None) -> None:
+    path = path or FAILURES_PATH
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as f:
+        for record in records:
+            f.write(json.dumps(record) + "\n")
 
 
 def main(argv: list[str] | None = None) -> int:
