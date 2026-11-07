@@ -106,6 +106,59 @@ def _cmd_search(args: argparse.Namespace) -> int:
     return 0
 
 
+def _print_triage_result(result) -> None:
+    print(f"category    : {result.category}")
+    print(f"summary     : {result.summary}")
+    print(f"tcodes      : {', '.join(result.tcodes) or '(none)'}")
+    print("steps       :")
+    for i, step in enumerate(result.steps, start=1):
+        suffix = f"  [{step.tcode}]" if step.tcode else ""
+        print(f"  {i}. {step.action}{suffix}")
+    print(f"escalate_to : {result.escalate_to or '(none)'}")
+    print(f"sources     : {', '.join(result.sources) or '(none)'}")
+    print(f"confidence  : {result.confidence}")
+    if result.unverified_tcodes:
+        print(f"unverified  : {', '.join(result.unverified_tcodes)}", file=sys.stderr)
+    if result.category == "out_of_scope":
+        print("This incident is not covered by the runbooks.")
+
+
+def _cmd_triage(args: argparse.Namespace) -> int:
+    from app.retrieval.store import Store
+    from app.triage_service import triage
+
+    if args.file:
+        log = open(args.file, encoding="utf-8").read()
+    else:
+        log = args.query
+
+    try:
+        store = Store.load()
+        trace: list = [] if args.show_trace else None
+        result = triage(log, store=store, trace=trace)
+        if trace:
+            for record in trace:
+                print(f"tool call: {record.tool}({record.args}) -> {record.result[:200]}", file=sys.stderr)
+    except InvalidQueryError as exc:
+        print(f"invalid query: {exc}", file=sys.stderr)
+        return 2
+    except ConfigError as exc:
+        print(f"config error: {exc}", file=sys.stderr)
+        return 3
+    except StaleIndexError as exc:
+        print(f"index error: {exc}", file=sys.stderr)
+        return 5
+    except Exception as exc:  # UpstreamError from chat/embedding gateway calls
+        print(f"gateway error: {exc}", file=sys.stderr)
+        return 4
+
+    if args.json:
+        print(json.dumps(result.model_dump(), indent=2))
+    else:
+        _print_triage_result(result)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="python -m app.cli")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -126,6 +179,14 @@ def build_parser() -> argparse.ArgumentParser:
     search_parser.add_argument("--json", action="store_true")
     search_parser.add_argument("--show-tokens", action="store_true")
     search_parser.set_defaults(func=_cmd_search)
+
+    triage_parser = subparsers.add_parser("triage", help="triage a log with the full agent")
+    triage_group = triage_parser.add_mutually_exclusive_group(required=True)
+    triage_group.add_argument("query", nargs="?", default=None)
+    triage_group.add_argument("--file", default=None)
+    triage_parser.add_argument("--json", action="store_true")
+    triage_parser.add_argument("--show-trace", action="store_true")
+    triage_parser.set_defaults(func=_cmd_triage)
 
     return parser
 

@@ -14,10 +14,14 @@ def _source_files(*dirs: str) -> list[Path]:
 
 def test_no_core_or_eval_module_imports_app_cli():
     offenders = []
-    for path in _source_files("app/retrieval", "eval"):
+    for path in _source_files("app/retrieval", "app/agent", "eval"):
         if path.name == "__pycache__":
             continue
         text = path.read_text(encoding="utf-8")
         if "import app.cli" in text or "from app.cli" in text or "from app import cli" in text:
             offenders.append(str(path.relative_to(ROOT)))
+    triage_service = ROOT / "app" / "triage_service.py"
+    text = triage_service.read_text(encoding="utf-8")
+    if "import app.cli" in text or "from app.cli" in text or "from app import cli" in text:
+        offenders.append(str(triage_service.relative_to(ROOT)))
     assert offenders == []

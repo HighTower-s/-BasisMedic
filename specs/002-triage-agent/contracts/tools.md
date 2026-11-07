@@ -25,7 +25,7 @@ Wraps Feature 1's `app.retrieval.search.search()` — no retrieval logic is dupl
 
 | Argument | Type | Validation |
 |---|---|---|
-| `query` | `str` | 3–300 characters after stripping; outside that range, the tool returns a string error, not a tool dispatch exception |
+| `query` | `str` | 10–300 characters after stripping; outside that range, the tool returns a string error, not a tool dispatch exception |
 
 **Description shown to the model** (this text doubles as the model-facing prompt that shapes when it is called):
 "Search the SAP Basis runbooks. Use the error code or message from the log as the query. Call again with a
@@ -36,7 +36,7 @@ different query if the results don't match."
 - On a non-empty result: a fenced, numbered listing of up to 3 hits, each showing its `doc_id#section` address
   and the section text — the same information Feature 1's CLI already prints for a human, reused for the model.
 - On an empty result (Feature 1's `search()` returned `[]`): the literal string `NO_RELEVANT_RUNBOOK`.
-- On a query outside the 3–300 character bound, or any other validation failure: a string naming the problem,
+- On a query outside the 10–300 character bound, or any other validation failure: a string naming the problem,
   never a crash.
 
 **Side effect on the caller's state**: every call (success or `NO_RELEVANT_RUNBOOK`) is recorded as a
