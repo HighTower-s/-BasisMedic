@@ -214,21 +214,32 @@ to each set of numbers.
 
 ### Tests for User Story 4
 
-- [ ] T034 [P] [US4] Write `tests/test_e2e_metrics.py` with hand-computed fixtures (mirrors Feature 1's `test_metrics.py` discipline): `category_accuracy`, `tcode_recall`, `unverified_claim_rate`, `valid_output_rate` each against a small fixed set of `CaseResult`-shaped inputs, including a case with `tcode_recall` between 0 and 1 and a case with `unverified_claim=True` from a non-empty `unverified_tcodes`
-- [ ] T035 [P] [US4] Write `tests/test_triage_service.py::test_baselines_skip_evidence_gathering_not_verification` (research.md R-08): with `app.llm.chat` mocked, `mode="E-NoRAG"` never calls `gather_evidence`/any tool, and `mode="E-ClassicRAG"` calls `search_runbook` exactly once regardless of its result — but **both** still pass through `verify_citations`/`verify_tcodes` identically to `mode="agent"` (a baseline is not measured leniently)
+- [X] T034 [P] [US4] Write `tests/test_e2e_metrics.py` with hand-computed fixtures (mirrors Feature 1's `test_metrics.py` discipline): `category_accuracy`, `tcode_recall`, `unverified_claim_rate`, `valid_output_rate` each against a small fixed set of `CaseResult`-shaped inputs, including a case with `tcode_recall` between 0 and 1 and a case with `unverified_claim=True` from a non-empty `unverified_tcodes`
+- [X] T035 [P] [US4] Write `tests/test_triage_service.py::test_baselines_skip_evidence_gathering_not_verification` (research.md R-08): with `app.llm.chat` mocked, `mode="E-NoRAG"` never calls `gather_evidence`/any tool, and `mode="E-ClassicRAG"` calls `search_runbook` exactly once regardless of its result — but **both** still pass through `verify_citations`/`verify_tcodes` identically to `mode="agent"` (a baseline is not measured leniently)
 
 ### Implementation for User Story 4
 
-- [ ] T036 [US4] Implement `app/triage_service.py:triage(..., mode=...)`'s `E-NoRAG`/`E-ClassicRAG` branches (extends T024) per contracts/service.md § Modes: `E-NoRAG` skips `gather_evidence` entirely and gives `format_result` the normalized log directly instead of Evidence; `E-ClassicRAG` calls `search_runbook` exactly once with the normalized log as the query, no loop
-- [ ] T037 [US4] Implement the four e2e metric functions in `eval/run_e2e.py` per data-model.md § 5 and `docs/prepare/09_eval_plan.md` § 2: `category_accuracy` (predicted == gold, over all cases including OOS), `tcode_recall` (`|gold_tcodes ∩ tcodes| / |gold_tcodes|`, averaged over in-scope cases), `unverified_claim_rate` (fraction of cases with a dropped citation or a non-empty `unverified_tcodes`), `valid_output_rate` (fraction not requiring the fallback)
-- [ ] T038 [US4] Implement `eval/run_e2e.py:run_config(split, mode, name) -> dict`: run one configuration over one split, write `eval/results/E4_{config_slug}_{split}.json` with the full `config` block (`corpus_sha`/`git_commit` copied from the loaded Feature-1 manifest, never recomputed — FR-019) plus per-case `CaseResult` entries, mirroring Feature 1's `eval/run_retrieval.py:run_config()` shape
-- [ ] T039 [US4] Implement the E4 experiment in `eval/run_all.py`: run `agent`, `E-NoRAG`, `E-ClassicRAG` over the test split via T038, reusing Feature 1's `_assert_comparable` guard (same split/`corpus_sha` required across the three rows) (FR-016, FR-018)
-- [ ] T040 [US4] Generate the E4 table into `eval/results/results.md` per contracts/file-formats.md § 5: each row stating which baseline (if any) it is, per-metric deltas, a verdict sentence per metric stated plainly whether or not the agent wins (FR-022), per-difficulty slices including Thai and mixed
-- [ ] T041 [P] [US4] Write `tests/test_run_all_e4.py` asserting `eval/run_all.py`'s E4 step refuses to emit a comparison whose three rows disagree on `split` or `corpus_sha` (reusing Feature 1's `_assert_comparable`, now exercised with E4 inputs)
+- [X] T036 [US4] Implement `app/triage_service.py:triage(..., mode=...)`'s `E-NoRAG`/`E-ClassicRAG` branches (extends T024) per contracts/service.md § Modes: `E-NoRAG` skips `gather_evidence` entirely and gives `format_result` the normalized log directly instead of Evidence; `E-ClassicRAG` calls `search_runbook` exactly once with the normalized log as the query, no loop
+- [X] T037 [US4] Implement the four e2e metric functions in `eval/run_e2e.py` per data-model.md § 5 and `docs/prepare/09_eval_plan.md` § 2: `category_accuracy` (predicted == gold, over all cases including OOS), `tcode_recall` (`|gold_tcodes ∩ tcodes| / |gold_tcodes|`, averaged over in-scope cases), `unverified_claim_rate` (fraction of cases with a dropped citation or a non-empty `unverified_tcodes`), `valid_output_rate` (fraction not requiring the fallback)
+- [X] T038 [US4] Implement `eval/run_e2e.py:run_config(split, mode, name) -> dict`: run one configuration over one split, write `eval/results/E4_{config_slug}_{split}.json` with the full `config` block (`corpus_sha`/`git_commit` copied from the loaded Feature-1 manifest, never recomputed — FR-019) plus per-case `CaseResult` entries, mirroring Feature 1's `eval/run_retrieval.py:run_config()` shape
+- [X] T039 [US4] Implement the E4 experiment in `eval/run_all.py`: run `agent`, `E-NoRAG`, `E-ClassicRAG` over the test split via T038, reusing Feature 1's `_assert_comparable` guard (same split/`corpus_sha` required across the three rows) (FR-016, FR-018)
+- [X] T040 [US4] Generate the E4 table into `eval/results/results.md` per contracts/file-formats.md § 5: each row stating which baseline (if any) it is, per-metric deltas, a verdict sentence per metric stated plainly whether or not the agent wins (FR-022), per-difficulty slices including Thai and mixed
+- [X] T041 [P] [US4] Write `tests/test_run_all_e4.py` asserting `eval/run_all.py`'s E4 step refuses to emit a comparison whose three rows disagree on `split` or `corpus_sha` (reusing Feature 1's `_assert_comparable`, now exercised with E4 inputs)
 
 **Checkpoint**: `uv run python -m eval.run_all` produces E4 numbers for the agent and both baselines, written to
 `eval/results/results.md`, reproducible via the chat cache. **US1–US4 all independently testable; US4 is the
 measured-improvement claim this feature exists to prove.**
+
+**Real measured outcome** (test split, n=30): `E-NoRAG` 0.600 category_accuracy / 0.154 tcode_recall;
+`E-ClassicRAG` 0.700 / 0.442; full **agent** 0.567 / 0.365. **The full agent does not beat either named
+baseline on accuracy or T-code recall** — a single non-agentic search (`E-ClassicRAG`) outperforms the
+bounded tool-calling loop on this test set, reported honestly per FR-022 rather than reframed. The agent
+does win on `unverified_claim_rate` (0.467 vs 0.767 for both baselines) — it is measurably more cautious
+about what it asserts, even though it is less often right. Required extending `format_result()`'s return
+shape (a new `FormatOutcome` dataclass carrying `repaired`/`fell_back`) and `triage()`'s signature (a new
+`outcome` out-param, same pattern as the existing `trace` param) so `eval/run_e2e.py` could compute
+`valid_output_rate` and `unverified_claim_rate` accurately rather than inferring them indirectly from the
+returned `TriageResult` alone.
 
 ---
 

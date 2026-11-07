@@ -35,8 +35,9 @@ def test_repair_loop_retries_once_then_succeeds(monkeypatch):
 
     monkeypatch.setattr(llm_module, "chat", fake_chat)
 
-    result = format_result(_evidence(), "a log")
-    assert result.category == "memory_dump"
+    outcome = format_result(_evidence(), "a log")
+    assert outcome.result.category == "memory_dump"
+    assert outcome.repaired is True
     assert len(calls) == 2  # one retry, within the REPAIR_ATTEMPTS cap
 
 
@@ -56,11 +57,12 @@ def test_repair_cap_exhaustion_falls_back_to_deterministic_result(fake_corpus, m
 
     monkeypatch.setattr(llm_module, "chat", fake_chat)
 
-    result = format_result(evidence, "a log", runbook_dir=runbook_dir, tcodes_path=tcodes_path)
+    outcome = format_result(evidence, "a log", runbook_dir=runbook_dir, tcodes_path=tcodes_path)
 
     assert len(calls) == 3  # 1 initial + REPAIR_ATTEMPTS(2) retries, then give up
-    assert result.confidence == "low"
-    assert result.sources == ["mem_alloc_fail#check"]
+    assert outcome.fell_back is True
+    assert outcome.result.confidence == "low"
+    assert outcome.result.sources == ["mem_alloc_fail#check"]
 
 
 def test_well_formed_json_on_first_attempt_needs_no_repair(monkeypatch):
@@ -81,6 +83,8 @@ def test_well_formed_json_on_first_attempt_needs_no_repair(monkeypatch):
 
     monkeypatch.setattr(llm_module, "chat", fake_chat)
 
-    result = format_result(_evidence(), "a log")
-    assert result.category == "memory_dump"
+    outcome = format_result(_evidence(), "a log")
+    assert outcome.result.category == "memory_dump"
+    assert outcome.repaired is False
+    assert outcome.fell_back is False
     assert len(calls) == 1  # no repair attempt needed

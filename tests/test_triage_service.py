@@ -63,6 +63,52 @@ def test_out_of_scope_is_forced_when_evidence_is_empty(fake_corpus, monkeypatch)
     assert calls["count"] == 2  # only the two Phase-1 loop calls; formatter skipped
 
 
+def test_e_norag_never_calls_any_tool_but_still_gets_verified(fake_corpus, monkeypatch):
+    store = _store(fake_corpus)
+    # E-NoRAG must never reach a tool call -- only one (formatter) chat call is made,
+    # and it fabricates a citation that verify_citations must still strip.
+    responses = [
+        _response(_no_tool_call_message(
+            '{"category": "memory_dump", "summary": "guess", "tcodes": ["ST22"], '
+            '"steps": [{"action": "Open ST22.", "tcode": "ST22"}], "escalate_to": null, '
+            '"sources": ["fabricated#not_real"], "confidence": "medium"}'
+        )),
+    ]
+
+    def fake_chat(messages, *, tools=None, temperature=0, model=None):
+        assert tools is None  # E-NoRAG never exposes tools -- it never loops
+        return responses.pop(0)
+
+    monkeypatch.setattr(llm_module, "chat", fake_chat)
+
+    result = triage("a log with some content in it for testing", store=store, mode="E-NoRAG")
+
+    assert result.category == "memory_dump"
+    assert result.sources == []  # fabricated citation stripped -- same verify.py as "agent" mode
+
+
+def test_e_classicrag_searches_exactly_once_regardless_of_result(fake_corpus, monkeypatch):
+    store = _store(fake_corpus)
+    search_calls = {"n": 0}
+
+    import app.triage_service as triage_service_module
+    original_search_runbook = triage_service_module.search_runbook
+
+    def counting_search_runbook(*a, **kw):
+        search_calls["n"] += 1
+        return original_search_runbook(*a, **kw)
+
+    monkeypatch.setattr(triage_service_module, "search_runbook", counting_search_runbook)
+
+    result = triage(
+        "a log with no matching runbook content at all whatsoever",
+        store=store, mode="E-ClassicRAG", retrieval_mode="bm25",
+    )
+
+    assert search_calls["n"] == 1
+    assert result.category == "out_of_scope"  # no evidence -> forced, same rule as "agent"
+
+
 def test_multi_search_case_not_forced_when_a_later_call_finds_something(fake_corpus, monkeypatch):
     store = _store(fake_corpus)
     responses = [

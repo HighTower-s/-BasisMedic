@@ -60,7 +60,11 @@ def _out_of_scope_result() -> TriageResult:
 def triage(
     log: str, *, mode: str = "agent", store: Store | None = None,
     trace: list[ToolCallRecord] | None = None, retrieval_mode: str | None = None,
+    outcome: dict | None = None,
 ) -> TriageResult:
+    """`outcome`, if given, is filled with {"repaired": bool, "fell_back": bool,
+    "forced_out_of_scope": bool} — purely diagnostic for eval/run_e2e.py, never read
+    by this function's own logic (same pattern as `trace`)."""
     stripped = log.strip()
     if not stripped or len(stripped) < MIN_QUERY_CHARS or len(stripped) > MAX_QUERY_CHARS:
         raise InvalidQueryError(
@@ -81,9 +85,20 @@ def triage(
     # so empty evidence there is not evidence of an out-of-scope incident.
     if mode in ("agent", "E-ClassicRAG") and not evidence:
         result = _out_of_scope_result()
+        if outcome is not None:
+            outcome.update(repaired=False, fell_back=False, forced_out_of_scope=True)
     else:
-        result = format_result(evidence, normalized)
+        format_outcome = format_result(evidence, normalized)
+        result = format_outcome.result
+        if outcome is not None:
+            outcome.update(
+                repaired=format_outcome.repaired, fell_back=format_outcome.fell_back,
+                forced_out_of_scope=False,
+            )
 
+    sources_before = list(result.sources)
     result = verify_citations(result, evidence)
     result = verify_tcodes(result, store.tcodes)
+    if outcome is not None:
+        outcome["citation_dropped"] = result.sources != sources_before
     return result

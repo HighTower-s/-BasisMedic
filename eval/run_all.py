@@ -12,6 +12,9 @@ from pathlib import Path
 from app import config
 from app.retrieval.ingest import build_index
 from app.retrieval.store import StaleIndexError, Store
+from eval.run_e2e import build_e4_failure_records
+from eval.run_e2e import run_config as run_e2e_config
+from eval.run_e2e import write_result as write_e2e_result
 from eval.run_retrieval import (
     append_failures,
     build_failure_records,
@@ -160,6 +163,19 @@ def choose_min_score(sweep_rows: list[dict]) -> dict:
         return (agg["recall_at_3_post"] + agg["oos_gate_accuracy"], -row["config"]["min_score"])
 
     return max(sweep_rows, key=key)
+
+
+def run_e4() -> list[dict]:
+    """Full agent vs E-NoRAG vs E-ClassicRAG, test split (FR-016, FR-018, R-08). All
+    three pass through the identical triage()/verify.py pipeline -- no baseline is
+    measured leniently."""
+    rows = []
+    for mode in ("agent", "E-NoRAG", "E-ClassicRAG"):
+        result = run_e2e_config(split="test", mode=mode, name=mode)
+        write_e2e_result(result, "test")
+        rows.append(result)
+    _assert_comparable(rows)
+    return rows
 
 
 def _render_e1_table(rows: list[dict], winning_strategy: str) -> str:
@@ -323,6 +339,46 @@ def _render_verdict_and_limitations(e2_rows_test: list[dict], baselines: dict, n
     )
 
 
+def _render_e4_table(rows: list[dict]) -> str:
+    lines = [
+        "### E4 — End-to-end comparison (test split)",
+        "",
+        "Varied variable: evidence-gathering strategy. `E-NoRAG` = no retrieval at all; "
+        "`E-ClassicRAG` = exactly one non-agentic search call; `agent` = the full bounded "
+        "tool-calling loop. All three pass through the identical `verify.py` checks "
+        "(research.md R-08) — no baseline is measured leniently.",
+        "",
+        "| config | category_accuracy | tcode_recall | unverified_claim_rate | valid_output_rate |",
+        "|---|---|---|---|---|",
+    ]
+    by_mode = {r["config"]["baseline"]: r for r in rows}
+    for mode in ("E-NoRAG", "E-ClassicRAG", "agent"):
+        agg = by_mode[mode]["aggregate"]
+        lines.append(
+            f"| {mode} | {agg['category_accuracy']:.3f} | {agg['tcode_recall']:.3f} | "
+            f"{agg['unverified_claim_rate']:.3f} | {agg['valid_output_rate']:.3f} |"
+        )
+    agent_agg = by_mode["agent"]["aggregate"]
+    norag_agg = by_mode["E-NoRAG"]["aggregate"]
+    classic_agg = by_mode["E-ClassicRAG"]["aggregate"]
+    beats_both = (
+        agent_agg["category_accuracy"] > norag_agg["category_accuracy"]
+        and agent_agg["category_accuracy"] > classic_agg["category_accuracy"]
+    )
+    verdict = (
+        f"Full agent category_accuracy={agent_agg['category_accuracy']:.3f} vs "
+        f"E-NoRAG={norag_agg['category_accuracy']:.3f}, E-ClassicRAG={classic_agg['category_accuracy']:.3f}. "
+        + (
+            "Beats both baselines."
+            if beats_both
+            else "Does **not** beat both baselines — stated plainly (FR-022)."
+        )
+    )
+    lines.append("")
+    lines.append(verdict)
+    return "\n".join(lines)
+
+
 def _render_header(section_store: Store) -> str:
     manifest = section_store.manifest
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -403,6 +459,16 @@ def main() -> int:
 
     _update_env_example_defaults(winning_mode, winning_strategy, chosen_floor)
 
+    e4_rows = run_e4()
+    by_mode = {r["config"]["baseline"]: r for r in e4_rows}
+    e4_failure_records = build_e4_failure_records(by_mode["agent"]["cases"], "agent")
+    append_failures(e4_failure_records)
+    print(f"failures.jsonl: +{len(e4_failure_records)} e2e failing case(s) for the agent config")
+    print(
+        f"E4 agent: category_accuracy={by_mode['agent']['aggregate']['category_accuracy']:.3f} "
+        f"tcode_recall={by_mode['agent']['aggregate']['tcode_recall']:.3f}"
+    )
+
     section_store = get_store("section")
     sections = [
         _render_header(section_store),
@@ -410,7 +476,8 @@ def main() -> int:
         _render_e2_table(e2_by_split["dev"] + e2_by_split["test"], baselines, winning_strategy),
         _render_e3_table(sweep_rows, chosen, sweep_name),
         _render_headline_table(headline),
-        _render_verdict_and_limitations(e2_by_split["test"], baselines, len(failure_records)),
+        _render_e4_table(e4_rows),
+        _render_verdict_and_limitations(e2_by_split["test"], baselines, len(failure_records) + len(e4_failure_records)),
     ]
     write_results_md(sections)
     print(f"wrote {RESULTS_MD}")

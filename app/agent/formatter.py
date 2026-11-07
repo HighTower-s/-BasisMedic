@@ -4,6 +4,7 @@ R-05). Never raises on malformed model output — always returns a valid TriageR
 
 import json
 import re
+from dataclasses import dataclass
 from pathlib import Path
 
 from pydantic import ValidationError
@@ -11,6 +12,13 @@ from pydantic import ValidationError
 from app import llm
 from app.agent.fallback import build_fallback
 from app.schemas import Hit, Step, TriageResult
+
+
+@dataclass
+class FormatOutcome:
+    result: TriageResult
+    repaired: bool  # at least one repair attempt was needed before succeeding
+    fell_back: bool  # REPAIR_ATTEMPTS exhausted; result came from build_fallback
 
 REPAIR_ATTEMPTS = 2  # code constant, not an env var (research.md R-04)
 
@@ -82,16 +90,17 @@ def _empty_evidence_fallback() -> TriageResult:
 
 def format_result(
     evidence: list[Hit], log: str, *, runbook_dir: Path | None = None, tcodes_path: Path | None = None
-) -> TriageResult:
+) -> FormatOutcome:
     messages = _build_messages(evidence, log)
 
-    for _attempt in range(REPAIR_ATTEMPTS + 1):
+    for attempt in range(REPAIR_ATTEMPTS + 1):
         response = llm.chat(messages, tools=None, temperature=0)
         content = response["choices"][0]["message"].get("content") or ""
         json_text = _extract_json_text(content)
         try:
             data = json.loads(json_text)
-            return TriageResult.model_validate(data)
+            result = TriageResult.model_validate(data)
+            return FormatOutcome(result=result, repaired=attempt > 0, fell_back=False)
         except (json.JSONDecodeError, ValidationError) as exc:
             messages.append({"role": "assistant", "content": content})
             messages.append(
@@ -99,5 +108,7 @@ def format_result(
             )
 
     if evidence:
-        return build_fallback(evidence, runbook_dir=runbook_dir, tcodes_path=tcodes_path)
-    return _empty_evidence_fallback()
+        fallback_result = build_fallback(evidence, runbook_dir=runbook_dir, tcodes_path=tcodes_path)
+    else:
+        fallback_result = _empty_evidence_fallback()
+    return FormatOutcome(result=fallback_result, repaired=True, fell_back=True)

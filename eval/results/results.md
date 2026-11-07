@@ -3,7 +3,7 @@
 - corpus_sha: `49b07d941e2b3e4b76a3fa0c7c94a434e6e5d5709952d25cb914acdf65252018`
 - git commit: `f06f1e5`
 - embed model: `bge-m3`
-- generated: 2026-11-07T18:16:32Z
+- generated: 2026-11-07T19:09:52Z
 - splits: dev (10 cases, tuning only), test (30 cases, reporting only)
 - all case logs are synthetic
 
@@ -74,11 +74,23 @@ Per-difficulty slices (post-gate recall@3):
 | mixed | 1.000 | 1.000 |
 | out-of-scope | gate_accuracy=1.000 | - |
 
+### E4 — End-to-end comparison (test split)
+
+Varied variable: evidence-gathering strategy. `E-NoRAG` = no retrieval at all; `E-ClassicRAG` = exactly one non-agentic search call; `agent` = the full bounded tool-calling loop. All three pass through the identical `verify.py` checks (research.md R-08) — no baseline is measured leniently.
+
+| config | category_accuracy | tcode_recall | unverified_claim_rate | valid_output_rate |
+|---|---|---|---|---|
+| E-NoRAG | 0.600 | 0.154 | 0.767 | 0.933 |
+| E-ClassicRAG | 0.700 | 0.442 | 0.767 | 1.000 |
+| agent | 0.567 | 0.365 | 0.467 | 0.967 |
+
+Full agent category_accuracy=0.567 vs E-NoRAG=0.600, E-ClassicRAG=0.700. Does **not** beat both baselines — stated plainly (FR-022).
+
 ### Verdict
 
 Hybrid retrieval (0.962 recall@3 pre-gate, test split) beats both named baselines (R-BM25=0.846, R-Dense-naive=0.942).
 
-`eval/results/failures.jsonl` records 5 failing test case(s) for the final headline configuration, each with expected-vs-retrieved detail and a failure type.
+`eval/results/failures.jsonl` records 31 failing test case(s) for the final headline configuration, each with expected-vs-retrieved detail and a failure type.
 
 ### Limitations
 

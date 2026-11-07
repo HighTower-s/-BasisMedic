@@ -1,0 +1,1062 @@
+{
+  "config": {
+    "experiment": "E4",
+    "name": "E-ClassicRAG",
+    "split": "test",
+    "baseline": "E-ClassicRAG",
+    "max_steps": 5,
+    "repair_attempts": 2,
+    "chat_model": "gemma-4-E4B-it",
+    "corpus_sha": "49b07d941e2b3e4b76a3fa0c7c94a434e6e5d5709952d25cb914acdf65252018",
+    "git_commit": "f06f1e5"
+  },
+  "aggregate": {
+    "n_cases": 30,
+    "category_accuracy": 0.7,
+    "tcode_recall": 0.4423076923076923,
+    "unverified_claim_rate": 0.7666666666666667,
+    "valid_output_rate": 1.0,
+    "by_difficulty": {
+      "easy": {
+        "category_accuracy": 0.5,
+        "tcode_recall": 0.4375,
+        "unverified_claim_rate": 0.875,
+        "valid_output_rate": 1.0
+      },
+      "medium": {
+        "category_accuracy": 1.0,
+        "tcode_recall": 0.625,
+        "unverified_claim_rate": 1.0,
+        "valid_output_rate": 1.0
+      },
+      "hard": {
+        "category_accuracy": 0.6,
+        "tcode_recall": 0.3,
+        "unverified_claim_rate": 0.7,
+        "valid_output_rate": 1.0
+      },
+      "thai": {
+        "category_accuracy": 1.0,
+        "tcode_recall": 0.3333333333333333,
+        "unverified_claim_rate": 1.0,
+        "valid_output_rate": 1.0
+      },
+      "mixed": {
+        "category_accuracy": 0.5,
+        "tcode_recall": 0.75,
+        "unverified_claim_rate": 1.0,
+        "valid_output_rate": 1.0
+      },
+      "oos": {
+        "category_accuracy": 0.75,
+        "tcode_recall": 0.0,
+        "unverified_claim_rate": 0.25,
+        "valid_output_rate": 1.0
+      }
+    }
+  },
+  "cases": [
+    {
+      "case_id": "t01",
+      "difficulty": "easy",
+      "format": "st22_header",
+      "gold_category": "memory_dump",
+      "gold_tcodes": [
+        "ST22",
+        "ST02"
+      ],
+      "produced": {
+        "category": "memory_dump",
+        "summary": "The ABAP program ZFI_MONTHLY_REPORT terminated with runtime error TSV_TNEW_PAGE_ALLOC_FAILED, indicating no more storage space is available for extending an internal table, likely due to large data processing.",
+        "tcodes": [
+          "SM37"
+        ],
+        "unverified_tcodes": [],
+        "steps": [
+          {
+            "action": "Investigate the program execution and memory usage for large reports or mass data loads.",
+            "tcode": "SM37"
+          }
+        ],
+        "escalate_to": "developer",
+        "sources": [],
+        "confidence": "high"
+      },
+      "repaired": false,
+      "fell_back": false,
+      "category_correct": true,
+      "tcode_recall": 0.0,
+      "unverified_claim": true
+    },
+    {
+      "case_id": "t02",
+      "difficulty": "medium",
+      "format": "sm21_syslog",
+      "gold_category": "memory_dump",
+      "gold_tcodes": [
+        "ST02",
+        "SM50"
+      ],
+      "produced": {
+        "category": "memory_dump",
+        "summary": "Multiple short dumps (SYSTEM_NO_ROLL, MEMORY_NO_MORE_PAGING) occurred across different users within a short timeframe, indicating an instance-wide memory shortage or excessive memory consumption.",
+        "tcodes": [
+          "ST22",
+          "SM21"
+        ],
+        "unverified_tcodes": [],
+        "steps": [
+          {
+            "action": "Open the dump and read 'Error analysis' and 'Information on where terminated'.",
+            "tcode": "ST22"
+          }
+        ],
+        "escalate_to": "basis",
+        "sources": [],
+        "confidence": "high"
+      },
+      "repaired": false,
+      "fell_back": false,
+      "category_correct": true,
+      "tcode_recall": 0.0,
+      "unverified_claim": true
+    },
+    {
+      "case_id": "t03",
+      "difficulty": "hard",
+      "format": "user_email",
+      "gold_category": "memory_dump",
+      "gold_tcodes": [
+        "ST02",
+        "SM66"
+      ],
+      "produced": {
+        "category": "memory_dump",
+        "summary": "Multiple users are experiencing session drops with out-of-memory messages, suggesting an instance-wide memory shortage rather than a single bad program.",
+        "tcodes": [
+          "ST22"
+        ],
+        "unverified_tcodes": [],
+        "steps": [
+          {
+            "action": "Check for short dumps named SYSTEM_NO_ROLL or MEMORY_NO_MORE_PAGING",
+            "tcode": "ST22"
+          }
+        ],
+        "escalate_to": "basis",
+        "sources": [],
+        "confidence": "high"
+      },
+      "repaired": false,
+      "fell_back": false,
+      "category_correct": true,
+      "tcode_recall": 0.0,
+      "unverified_claim": true
+    },
+    {
+      "case_id": "t04",
+      "difficulty": "easy",
+      "format": "st22_header",
+      "gold_category": "timeout",
+      "gold_tcodes": [
+        "ST22",
+        "SM50"
+      ],
+      "produced": {
+        "category": "timeout",
+        "summary": "A TIME_OUT short dump occurred during the execution of report ZSD_SALES_ANALYSIS, indicating the process exceeded the time limit set by rdisp/max_wprun_time.",
+        "tcodes": [
+          "SM37"
+        ],
+        "unverified_tcodes": [],
+        "steps": [
+          {
+            "action": "Check the variant/selection and whether data volume grew.",
+            "tcode": "SM37"
+          }
+        ],
+        "escalate_to": "developer",
+        "sources": [],
+        "confidence": "high"
+      },
+      "repaired": false,
+      "fell_back": false,
+      "category_correct": true,
+      "tcode_recall": 0.0,
+      "unverified_claim": true
+    },
+    {
+      "case_id": "t05",
+      "difficulty": "medium",
+      "format": "sm21_syslog",
+      "gold_category": "timeout",
+      "gold_tcodes": [
+        "SM50",
+        "SM66"
+      ],
+      "produced": {
+        "category": "timeout",
+        "summary": "Dialog work processes are busy performing sequential reads on table VBAP, causing logon attempts to queue. This indicates a potential performance bottleneck due to slow database access.",
+        "tcodes": [
+          "SM50",
+          "SM66"
+        ],
+        "unverified_tcodes": [],
+        "steps": [
+          {
+            "action": "Look at the current action and the table being read",
+            "tcode": "SM50"
+          },
+          {
+            "action": "Check across instances for similar issues",
+            "tcode": "SM66"
+          }
+        ],
+        "escalate_to": "dba",
+        "sources": [],
+        "confidence": "high"
+      },
+      "repaired": false,
+      "fell_back": false,
+      "category_correct": true,
+      "tcode_recall": 1.0,
+      "unverified_claim": true
+    },
+    {
+      "case_id": "t06",
+      "difficulty": "hard",
+      "format": "chat_thai",
+      "gold_category": "timeout",
+      "gold_tcodes": [
+        "SM50",
+        "SM66"
+      ],
+      "produced": {
+        "category": "timeout",
+        "summary": "System is very slow, users cannot log in. SM50 shows many stuck work processes with no free processes available.",
+        "tcodes": [
+          "SM50"
+        ],
+        "unverified_tcodes": [],
+        "steps": [
+          {
+            "action": "Check for dialog work processes in status Running for a long time and check for sequential reads against large tables.",
+            "tcode": "SM50"
+          }
+        ],
+        "escalate_to": "basis",
+        "sources": [],
+        "confidence": "high"
+      },
+      "repaired": false,
+      "fell_back": false,
+      "category_correct": true,
+      "tcode_recall": 0.5,
+      "unverified_claim": true
+    },
+    {
+      "case_id": "t07",
+      "difficulty": "easy",
+      "format": "sm37_joblog",
+      "gold_category": "job_failure",
+      "gold_tcodes": [
+        "SM37",
+        "SU01"
+      ],
+      "produced": {
+        "category": "user_auth",
+        "summary": "The background job failed because the user SD_BATCH is locked, and the job was subsequently cancelled due to a system exception.",
+        "tcodes": [
+          "SM37"
+        ],
+        "unverified_tcodes": [],
+        "steps": [
+          {
+            "action": "Check job log for cancellation reason",
+            "tcode": "SM37"
+          }
+        ],
+        "escalate_to": "basis",
+        "sources": [],
+        "confidence": "high"
+      },
+      "repaired": false,
+      "fell_back": false,
+      "category_correct": false,
+      "tcode_recall": 0.5,
+      "unverified_claim": true
+    },
+    {
+      "case_id": "t08",
+      "difficulty": "medium",
+      "format": "sm37_joblog",
+      "gold_category": "job_failure",
+      "gold_tcodes": [
+        "SM37",
+        "SM50"
+      ],
+      "produced": {
+        "category": "job_failure",
+        "summary": "Job ZPP_PRODUCTION_PLAN is stuck in 'Ready' status because there are no free background work processes available on the system since 05:50.",
+        "tcodes": [
+          "SM37",
+          "SM50"
+        ],
+        "unverified_tcodes": [],
+        "steps": [
+          {
+            "action": "Check for work processes in PRIV mode and memory usage",
+            "tcode": "SM50"
+          },
+          {
+            "action": "Check roll area, paging, and extended memory usage",
+            "tcode": "ST02"
+          }
+        ],
+        "escalate_to": "basis",
+        "sources": [],
+        "confidence": "high"
+      },
+      "repaired": false,
+      "fell_back": false,
+      "category_correct": true,
+      "tcode_recall": 1.0,
+      "unverified_claim": true
+    },
+    {
+      "case_id": "t09",
+      "difficulty": "hard",
+      "format": "other",
+      "gold_category": "job_failure",
+      "gold_tcodes": [
+        "SM37",
+        "SM51"
+      ],
+      "produced": {
+        "category": "job_failure",
+        "summary": "A critical overnight stock report job is stuck in a waiting state and has not started, despite no reported failures. This suggests the scheduler is waiting for a background work process.",
+        "tcodes": [
+          "SM37"
+        ],
+        "unverified_tcodes": [],
+        "steps": [
+          {
+            "action": "Check job status in SM37 to confirm 'Ready' or 'Released' status.",
+            "tcode": "SM37"
+          }
+        ],
+        "escalate_to": "basis",
+        "sources": [],
+        "confidence": "high"
+      },
+      "repaired": false,
+      "fell_back": false,
+      "category_correct": true,
+      "tcode_recall": 0.5,
+      "unverified_claim": true
+    },
+    {
+      "case_id": "t10",
+      "difficulty": "easy",
+      "format": "user_email",
+      "gold_category": "lock_issue",
+      "gold_tcodes": [
+        "SM12",
+        "SM04"
+      ],
+      "produced": {
+        "category": "out_of_scope",
+        "summary": "nothing in the corpus cleared the relevance floor for this log",
+        "tcodes": [],
+        "unverified_tcodes": [],
+        "steps": [
+          {
+            "action": "Not covered by the runbooks; investigate manually or escalate.",
+            "tcode": null
+          }
+        ],
+        "escalate_to": null,
+        "sources": [],
+        "confidence": "low"
+      },
+      "repaired": false,
+      "fell_back": false,
+      "category_correct": false,
+      "tcode_recall": 0.0,
+      "unverified_claim": false
+    },
+    {
+      "case_id": "t11",
+      "difficulty": "medium",
+      "format": "sm21_syslog",
+      "gold_category": "lock_issue",
+      "gold_tcodes": [
+        "SM12",
+        "RZ11"
+      ],
+      "produced": {
+        "category": "lock_issue",
+        "summary": "Multiple users are unable to save documents due to a lock table overflow in the enqueue server, as indicated by SM21 logs.",
+        "tcodes": [
+          "SM21"
+        ],
+        "unverified_tcodes": [],
+        "steps": [
+          {
+            "action": "Check the system log for lock table overflow entries.",
+            "tcode": "SM21"
+          }
+        ],
+        "escalate_to": "basis",
+        "sources": [],
+        "confidence": "high"
+      },
+      "repaired": false,
+      "fell_back": false,
+      "category_correct": true,
+      "tcode_recall": 0.0,
+      "unverified_claim": true
+    },
+    {
+      "case_id": "t12",
+      "difficulty": "hard",
+      "format": "chat_thai",
+      "gold_category": "lock_issue",
+      "gold_tcodes": [
+        "SM12",
+        "SM13"
+      ],
+      "produced": {
+        "category": "lock_issue",
+        "summary": "A sales order document is locked by a user who left the company last week, preventing any edits.",
+        "tcodes": [
+          "SM12"
+        ],
+        "unverified_tcodes": [],
+        "steps": [
+          {
+            "action": "Check lock entries in SM12 for the document.",
+            "tcode": "SM12"
+          }
+        ],
+        "escalate_to": "developer",
+        "sources": [],
+        "confidence": "high"
+      },
+      "repaired": false,
+      "fell_back": false,
+      "category_correct": true,
+      "tcode_recall": 0.5,
+      "unverified_claim": true
+    },
+    {
+      "case_id": "t13",
+      "difficulty": "easy",
+      "format": "other",
+      "gold_category": "update_error",
+      "gold_tcodes": [
+        "SM13",
+        "ST22"
+      ],
+      "produced": {
+        "category": "update_error",
+        "summary": "User receives 'Update was terminated' message, and SM13 shows an update request with status ERR for that user, indicating a database update failure after the user perceived a successful save.",
+        "tcodes": [
+          "SM13"
+        ],
+        "unverified_tcodes": [],
+        "steps": [
+          {
+            "action": "Check for update requests with status ERR",
+            "tcode": "SM13"
+          }
+        ],
+        "escalate_to": "developer",
+        "sources": [],
+        "confidence": "high"
+      },
+      "repaired": false,
+      "fell_back": false,
+      "category_correct": true,
+      "tcode_recall": 0.5,
+      "unverified_claim": true
+    },
+    {
+      "case_id": "t14",
+      "difficulty": "medium",
+      "format": "sm21_syslog",
+      "gold_category": "update_error",
+      "gold_tcodes": [
+        "SM14",
+        "DB02"
+      ],
+      "produced": {
+        "category": "update_error",
+        "summary": "The update system was deactivated due to repeated database errors, preventing any user from saving transactions since 15:30.",
+        "tcodes": [
+          "SM14",
+          "SM21",
+          "SM13",
+          "ST22",
+          "SM04",
+          "SM12"
+        ],
+        "unverified_tcodes": [],
+        "steps": [
+          {
+            "action": "Check SM13 for failed entries to find the function module that failed.",
+            "tcode": "SM13"
+          },
+          {
+            "action": "Find the dump in ST22 from the same timestamp to get the technical reason.",
+            "tcode": "ST22"
+          },
+          {
+            "action": "Check SM21 for database-level problems around the same time.",
+            "tcode": "SM21"
+          }
+        ],
+        "escalate_to": "basis",
+        "sources": [],
+        "confidence": "high"
+      },
+      "repaired": false,
+      "fell_back": false,
+      "category_correct": true,
+      "tcode_recall": 0.5,
+      "unverified_claim": true
+    },
+    {
+      "case_id": "t15",
+      "difficulty": "hard",
+      "format": "user_email",
+      "gold_category": "update_error",
+      "gold_tcodes": [
+        "SM13",
+        "ST22"
+      ],
+      "produced": {
+        "category": "out_of_scope",
+        "summary": "nothing in the corpus cleared the relevance floor for this log",
+        "tcodes": [],
+        "unverified_tcodes": [],
+        "steps": [
+          {
+            "action": "Not covered by the runbooks; investigate manually or escalate.",
+            "tcode": null
+          }
+        ],
+        "escalate_to": null,
+        "sources": [],
+        "confidence": "low"
+      },
+      "repaired": false,
+      "fell_back": false,
+      "category_correct": false,
+      "tcode_recall": 0.0,
+      "unverified_claim": false
+    },
+    {
+      "case_id": "t16",
+      "difficulty": "easy",
+      "format": "stms_log",
+      "gold_category": "transport_error",
+      "gold_tcodes": [
+        "STMS",
+        "SE01"
+      ],
+      "produced": {
+        "category": "transport_error",
+        "summary": "Import of request QASK900512 failed with return code 8 due to a syntax error in program ZMM_GOODS_RECEIPT during repository object activation.",
+        "tcodes": [
+          "STMS"
+        ],
+        "unverified_tcodes": [],
+        "steps": [
+          {
+            "action": "Check syntax error in transported code",
+            "tcode": "SE38"
+          }
+        ],
+        "escalate_to": "developer",
+        "sources": [],
+        "confidence": "high"
+      },
+      "repaired": false,
+      "fell_back": false,
+      "category_correct": true,
+      "tcode_recall": 0.5,
+      "unverified_claim": true
+    },
+    {
+      "case_id": "t17",
+      "difficulty": "medium",
+      "format": "sm37_joblog",
+      "gold_category": "transport_error",
+      "gold_tcodes": [
+        "STMS",
+        "SM37"
+      ],
+      "produced": {
+        "category": "transport_error",
+        "summary": "The STMS import monitor shows request QASK900520 running for 3 hours with no progress, and RDDIMPDP is not scheduled in client 000.",
+        "tcodes": [
+          "STMS",
+          "SM37"
+        ],
+        "unverified_tcodes": [],
+        "steps": [
+          {
+            "action": "Open the import monitor and read the tp system log and action log for the request.",
+            "tcode": "STMS"
+          },
+          {
+            "action": "Check whether RDDIMPDP is scheduled and running in the target client and in client 000.",
+            "tcode": "SM37"
+          }
+        ],
+        "escalate_to": "basis",
+        "sources": [],
+        "confidence": "high"
+      },
+      "repaired": false,
+      "fell_back": false,
+      "category_correct": true,
+      "tcode_recall": 1.0,
+      "unverified_claim": true
+    },
+    {
+      "case_id": "t18",
+      "difficulty": "hard",
+      "format": "other",
+      "gold_category": "transport_error",
+      "gold_tcodes": [
+        "STMS",
+        "SE38"
+      ],
+      "produced": {
+        "category": "out_of_scope",
+        "summary": "nothing in the corpus cleared the relevance floor for this log",
+        "tcodes": [],
+        "unverified_tcodes": [],
+        "steps": [
+          {
+            "action": "Not covered by the runbooks; investigate manually or escalate.",
+            "tcode": null
+          }
+        ],
+        "escalate_to": null,
+        "sources": [],
+        "confidence": "low"
+      },
+      "repaired": false,
+      "fell_back": false,
+      "category_correct": false,
+      "tcode_recall": 0.0,
+      "unverified_claim": false
+    },
+    {
+      "case_id": "t19",
+      "difficulty": "easy",
+      "format": "other",
+      "gold_category": "user_auth",
+      "gold_tcodes": [
+        "SU01"
+      ],
+      "produced": {
+        "category": "lock_issue",
+        "summary": "User cannot log on because the account is locked after multiple failed password attempts.",
+        "tcodes": [
+          "SU01"
+        ],
+        "unverified_tcodes": [],
+        "steps": [
+          {
+            "action": "Check the RFC user's lock status and validity",
+            "tcode": "SU01"
+          }
+        ],
+        "escalate_to": "basis",
+        "sources": [],
+        "confidence": "high"
+      },
+      "repaired": false,
+      "fell_back": false,
+      "category_correct": false,
+      "tcode_recall": 1.0,
+      "unverified_claim": true
+    },
+    {
+      "case_id": "t20",
+      "difficulty": "medium",
+      "format": "other",
+      "gold_category": "user_auth",
+      "gold_tcodes": [
+        "SU53",
+        "PFCG"
+      ],
+      "produced": {
+        "category": "user_auth",
+        "summary": "Authorization check failed for object M_MSEG_WMB, activity 01, plant 1000, preventing a specific transaction action despite normal login.",
+        "tcodes": [
+          "SU53"
+        ],
+        "unverified_tcodes": [],
+        "steps": [
+          {
+            "action": "Check authorization object and field values",
+            "tcode": "SU53"
+          }
+        ],
+        "escalate_to": "security",
+        "sources": [],
+        "confidence": "high"
+      },
+      "repaired": false,
+      "fell_back": false,
+      "category_correct": true,
+      "tcode_recall": 0.5,
+      "unverified_claim": true
+    },
+    {
+      "case_id": "t21",
+      "difficulty": "hard",
+      "format": "user_email",
+      "gold_category": "user_auth",
+      "gold_tcodes": [
+        "SU53",
+        "SUIM"
+      ],
+      "produced": {
+        "category": "out_of_scope",
+        "summary": "nothing in the corpus cleared the relevance floor for this log",
+        "tcodes": [],
+        "unverified_tcodes": [],
+        "steps": [
+          {
+            "action": "Not covered by the runbooks; investigate manually or escalate.",
+            "tcode": null
+          }
+        ],
+        "escalate_to": null,
+        "sources": [],
+        "confidence": "low"
+      },
+      "repaired": false,
+      "fell_back": false,
+      "category_correct": false,
+      "tcode_recall": 0.0,
+      "unverified_claim": false
+    },
+    {
+      "case_id": "t22",
+      "difficulty": "easy",
+      "format": "sm59_test",
+      "gold_category": "rfc_error",
+      "gold_tcodes": [
+        "SM59",
+        "SU01"
+      ],
+      "produced": {
+        "category": "user_auth",
+        "summary": "RFC connection test failed because the user's name or password is incorrect, indicating an authentication issue with the target system.",
+        "tcodes": [
+          "SM59",
+          "SU01",
+          "SMGW"
+        ],
+        "unverified_tcodes": [],
+        "steps": [
+          {
+            "action": "Run connection test first, then authorization or logon test separately",
+            "tcode": "SM59"
+          },
+          {
+            "action": "Check the RFC user's lock status and validity in the target system",
+            "tcode": "SU01"
+          },
+          {
+            "action": "Look at the gateway monitor on the target system",
+            "tcode": "SMGW"
+          }
+        ],
+        "escalate_to": "basis",
+        "sources": [],
+        "confidence": "high"
+      },
+      "repaired": false,
+      "fell_back": false,
+      "category_correct": false,
+      "tcode_recall": 1.0,
+      "unverified_claim": true
+    },
+    {
+      "case_id": "t23",
+      "difficulty": "medium",
+      "format": "other",
+      "gold_category": "rfc_error",
+      "gold_tcodes": [
+        "SM58",
+        "SMQ1"
+      ],
+      "produced": {
+        "category": "rfc_error",
+        "summary": "tRFC entries are in SYSFAIL status for the warehouse system interface since the connection dropped, and the queue is in STOP status.",
+        "tcodes": [
+          "SM58",
+          "SMQ1"
+        ],
+        "unverified_tcodes": [],
+        "steps": [
+          {
+            "action": "Check SM13 for failed entries to determine status, user, time, and function module.",
+            "tcode": "SM13"
+          },
+          {
+            "action": "Check ST22 for dumps from the same timestamp to find the technical reason.",
+            "tcode": "ST22"
+          },
+          {
+            "action": "Check SM21 for system logs around the same time for database-level problems.",
+            "tcode": "SM21"
+          }
+        ],
+        "escalate_to": "developer",
+        "sources": [],
+        "confidence": "high"
+      },
+      "repaired": false,
+      "fell_back": false,
+      "category_correct": true,
+      "tcode_recall": 1.0,
+      "unverified_claim": true
+    },
+    {
+      "case_id": "t24",
+      "difficulty": "hard",
+      "format": "chat_thai",
+      "gold_category": "rfc_error",
+      "gold_tcodes": [
+        "SM58",
+        "SMQ1"
+      ],
+      "produced": {
+        "category": "rfc_error",
+        "summary": "Warehouse system data has not been coming into SAP since last night. The team mentioned a connection issue that occurred late at night and did not resolve itself.",
+        "tcodes": [
+          "ST02",
+          "SM50"
+        ],
+        "unverified_tcodes": [],
+        "steps": [
+          {
+            "action": "Check for recurring shortages and analyze system performance.",
+            "tcode": "ST02"
+          },
+          {
+            "action": "Examine work process usage.",
+            "tcode": "SM50"
+          }
+        ],
+        "escalate_to": "basis",
+        "sources": [],
+        "confidence": "medium"
+      },
+      "repaired": false,
+      "fell_back": false,
+      "category_correct": true,
+      "tcode_recall": 0.0,
+      "unverified_claim": true
+    },
+    {
+      "case_id": "t25",
+      "difficulty": "hard",
+      "format": "sm37_joblog",
+      "gold_category": "job_failure",
+      "gold_tcodes": [
+        "SM37",
+        "SU01"
+      ],
+      "produced": {
+        "category": "user_auth",
+        "summary": "The background job failed because the user SD_BATCH is locked, and the job was subsequently cancelled due to a system exception.",
+        "tcodes": [
+          "SM37"
+        ],
+        "unverified_tcodes": [],
+        "steps": [
+          {
+            "action": "Check job log for cancellation reason",
+            "tcode": "SM37"
+          }
+        ],
+        "escalate_to": "basis",
+        "sources": [],
+        "confidence": "high"
+      },
+      "repaired": false,
+      "fell_back": false,
+      "category_correct": false,
+      "tcode_recall": 0.5,
+      "unverified_claim": true
+    },
+    {
+      "case_id": "t26",
+      "difficulty": "hard",
+      "format": "other",
+      "gold_category": "lock_issue",
+      "gold_tcodes": [
+        "SM12",
+        "SM13"
+      ],
+      "produced": {
+        "category": "lock_issue",
+        "summary": "Document save failed due to a lock held by a former employee, coinciding with an 'Update was terminated' message, suggesting a session or lock issue.",
+        "tcodes": [
+          "SM12",
+          "SM13"
+        ],
+        "unverified_tcodes": [],
+        "steps": [
+          {
+            "action": "Check for old lock entries",
+            "tcode": "SM12"
+          },
+          {
+            "action": "Check update requests for errors",
+            "tcode": "SM13"
+          }
+        ],
+        "escalate_to": "basis",
+        "sources": [],
+        "confidence": "high"
+      },
+      "repaired": false,
+      "fell_back": false,
+      "category_correct": true,
+      "tcode_recall": 1.0,
+      "unverified_claim": true
+    },
+    {
+      "case_id": "t27",
+      "difficulty": "medium",
+      "format": "hana_alert",
+      "gold_category": "out_of_scope",
+      "gold_tcodes": [],
+      "produced": {
+        "category": "out_of_scope",
+        "summary": "nothing in the corpus cleared the relevance floor for this log",
+        "tcodes": [],
+        "unverified_tcodes": [],
+        "steps": [
+          {
+            "action": "Not covered by the runbooks; investigate manually or escalate.",
+            "tcode": null
+          }
+        ],
+        "escalate_to": null,
+        "sources": [],
+        "confidence": "low"
+      },
+      "repaired": false,
+      "fell_back": false,
+      "category_correct": true,
+      "tcode_recall": 0.0,
+      "unverified_claim": false
+    },
+    {
+      "case_id": "t28",
+      "difficulty": "medium",
+      "format": "other",
+      "gold_category": "out_of_scope",
+      "gold_tcodes": [],
+      "produced": {
+        "category": "out_of_scope",
+        "summary": "nothing in the corpus cleared the relevance floor for this log",
+        "tcodes": [],
+        "unverified_tcodes": [],
+        "steps": [
+          {
+            "action": "Not covered by the runbooks; investigate manually or escalate.",
+            "tcode": null
+          }
+        ],
+        "escalate_to": null,
+        "sources": [],
+        "confidence": "low"
+      },
+      "repaired": false,
+      "fell_back": false,
+      "category_correct": true,
+      "tcode_recall": 0.0,
+      "unverified_claim": false
+    },
+    {
+      "case_id": "t29",
+      "difficulty": "medium",
+      "format": "other",
+      "gold_category": "out_of_scope",
+      "gold_tcodes": [],
+      "produced": {
+        "category": "out_of_scope",
+        "summary": "nothing in the corpus cleared the relevance floor for this log",
+        "tcodes": [],
+        "unverified_tcodes": [],
+        "steps": [
+          {
+            "action": "Not covered by the runbooks; investigate manually or escalate.",
+            "tcode": null
+          }
+        ],
+        "escalate_to": null,
+        "sources": [],
+        "confidence": "low"
+      },
+      "repaired": false,
+      "fell_back": false,
+      "category_correct": true,
+      "tcode_recall": 0.0,
+      "unverified_claim": false
+    },
+    {
+      "case_id": "t30",
+      "difficulty": "medium",
+      "format": "other",
+      "gold_category": "out_of_scope",
+      "gold_tcodes": [],
+      "produced": {
+        "category": "update_error",
+        "summary": "A Z-program insert is failing with a database error about a duplicate key when two users run the month-end batch concurrently. This suggests a concurrency issue during the update process.",
+        "tcodes": [
+          "SM13",
+          "ST22",
+          "SM21",
+          "SM37"
+        ],
+        "unverified_tcodes": [],
+        "steps": [
+          {
+            "action": "Check failed update entries for status, user, time, and failing function module",
+            "tcode": "SM13"
+          },
+          {
+            "action": "Find the dump from the same timestamp for the technical reason",
+            "tcode": "ST22"
+          },
+          {
+            "action": "Check the system log for database-level problems around the same time",
+            "tcode": "SM21"
+          }
+        ],
+        "escalate_to": "developer",
+        "sources": [],
+        "confidence": "high"
+      },
+      "repaired": false,
+      "fell_back": false,
+      "category_correct": false,
+      "tcode_recall": 0.0,
+      "unverified_claim": true
+    }
+  ]
+}
