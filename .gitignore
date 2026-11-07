@@ -1,0 +1,10 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+data/cache/
+
+# data/index/ IS committed: ~500KB, and it lets a fresh clone run search and eval
+# with no API key at all (Constitution IX, and the "proxy down near the deadline"
+# risk in docs/prepare/10_timeline_and_checklist.md section 7).

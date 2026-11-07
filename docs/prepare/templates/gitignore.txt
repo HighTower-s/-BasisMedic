@@ -1,0 +1,8 @@
+# rename to .gitignore
+.env
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+data/cache/
+# keep data/index/ committed only if you want reproducible eval without re-embedding

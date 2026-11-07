@@ -1,0 +1,24 @@
+[project]
+name = "basis-medic"
+version = "0.1.0"
+description = "BasisMedic - an evaluated RAG agent for SAP Basis incident triage"
+requires-python = ">=3.12"
+dependencies = [
+    "openai>=1.40",
+    "pydantic>=2.7",
+    "numpy>=1.26",
+    "rank-bm25>=0.2.2",
+]
+
+[project.optional-dependencies]
+api = ["fastapi>=0.115", "uvicorn[standard]>=0.30"]
+
+[dependency-groups]
+dev = ["pytest>=8.0"]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
