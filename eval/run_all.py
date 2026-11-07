@@ -101,6 +101,55 @@ def run_e2(winning_strategy: str) -> tuple[dict[str, list[dict]], dict[str, dict
     return by_split, baselines
 
 
+_MODE_PREFERENCE = ("hybrid", "dense", "bm25")
+
+
+def pick_mode_from_dev(e2_dev_rows: list[dict]) -> str:
+    """Chosen from the DEV split only (Constitution I). On a tie — expected here, since
+    the 8-case dev split gives all three modes recall@3_pre=1.0 (a ceiling effect) —
+    prefer hybrid, then dense, then bm25, reflecting the project's own retrieval-quality
+    ordering rather than an arbitrary dict/list order."""
+    def key(row: dict) -> tuple:
+        agg = row["aggregate"]
+        mode = row["config"]["mode"]
+        return (agg["recall_at_3_pre"], agg["mrr_pre"], -_MODE_PREFERENCE.index(mode))
+
+    return max(e2_dev_rows, key=key)["config"]["mode"]
+
+
+SWEEP_FLOORS = [round(0.30 + 0.05 * i, 2) for i in range(7)]  # 0.30 .. 0.60
+
+
+def sweep_min_score(
+    split: str, *, mode: str, chunk_strategy: str, store: Store | None = None
+) -> list[dict]:
+    """E3: sweep MIN_SCORE on the dev split ONLY, post-gate (FR-039). Raises for any
+    split other than 'dev' — the test set must stay mechanically out of reach of tuning
+    (FR-041, SC-009)."""
+    if split != "dev":
+        raise ValueError(f"sweep_min_score only accepts split='dev', got {split!r} (FR-041)")
+    store = store or get_store(chunk_strategy)
+    rows = []
+    for floor in SWEEP_FLOORS:
+        result = run_config(
+            split="dev", mode=mode, chunk_strategy=chunk_strategy, min_score=floor,
+            experiment="E3", name=f"sweep min_score={floor}", k=3, store=store,
+        )
+        write_result(result, "dev")
+        rows.append(result)
+    return rows
+
+
+def choose_min_score(sweep_rows: list[dict]) -> dict:
+    """Maximise in-scope recall@3_post + out-of-scope gate accuracy; on a tie prefer the
+    smaller floor (keeps more in-scope recall). Returns the winning sweep row."""
+    def key(row: dict) -> tuple:
+        agg = row["aggregate"]
+        return (agg["recall_at_3_post"] + agg["oos_gate_accuracy"], -row["config"]["min_score"])
+
+    return max(sweep_rows, key=key)
+
+
 def _render_e1_table(rows: list[dict], winning_strategy: str) -> str:
     lines = [
         "### E1 — Chunking strategy (pre-gate, mode=dense, k=3)",
@@ -163,6 +212,64 @@ def _render_e2_table(
     return "\n".join(lines)
 
 
+def _render_e3_table(sweep_rows: list[dict], chosen: dict, sweep_name: str) -> str:
+    lines = [
+        "### E3 — MIN_SCORE sweep (dev split only, post-gate)",
+        "",
+        f"Experiment id: `{sweep_name}`. In-scope recall@3 and out-of-scope rejection rate "
+        "traded off across the floor. **Dev cases only — the test set is never read here** "
+        "(FR-041).",
+        "",
+        "| min_score | recall@3_post (in-scope) | oos_gate_accuracy | false_refusal_rate |",
+        "|---|---|---|---|",
+    ]
+    for row in sweep_rows:
+        agg = row["aggregate"]
+        marker = "  <- chosen" if row["config"]["min_score"] == chosen["config"]["min_score"] else ""
+        lines.append(
+            f"| {row['config']['min_score']:.2f} | {agg['recall_at_3_post']:.3f} | "
+            f"{agg['oos_gate_accuracy']:.3f} | {agg['false_refusal_rate']:.3f}{marker} |"
+        )
+    lines.append("")
+    lines.append(
+        f"**Chosen MIN_SCORE = {chosen['config']['min_score']:.2f}**, from dev sweep "
+        f"`{sweep_name}` (maximises recall@3_post + oos_gate_accuracy; ties broken toward "
+        "the smaller floor)."
+    )
+    return "\n".join(lines)
+
+
+def _render_headline_table(test_result: dict) -> str:
+    agg = test_result["aggregate"]
+    cfg = test_result["config"]
+    lines = [
+        "### Headline — final configuration on the test set (post-gate)",
+        "",
+        f"mode=`{cfg['mode']}`, chunk_strategy=`{cfg['chunk_strategy']}`, k={cfg['k']}, "
+        f"min_score={cfg['min_score']:.2f} (unchanged from the E3 dev sweep).",
+        "",
+        "| metric | value |",
+        "|---|---|",
+        f"| recall@3 (post-gate) | {agg['recall_at_3_post']:.3f} |",
+        f"| MRR (post-gate) | {agg['mrr_post']:.3f} |",
+        f"| out-of-scope gate accuracy | {agg['oos_gate_accuracy']:.3f} |",
+        f"| false refusal rate | {agg['false_refusal_rate']:.3f} |",
+        "",
+        "Per-difficulty slices (post-gate recall@3):",
+        "",
+        "| slice | recall@3_post | mrr_post |",
+        "|---|---|---|",
+    ]
+    for slice_name in ("easy", "medium", "hard", "thai", "mixed"):
+        s = agg["by_difficulty"].get(slice_name, {})
+        if "recall_at_3_post" in s:
+            lines.append(f"| {slice_name} | {s['recall_at_3_post']:.3f} | {s['mrr_post']:.3f} |")
+    oos = agg["by_difficulty"].get("oos", {})
+    if "gate_accuracy" in oos:
+        lines.append(f"| out-of-scope | gate_accuracy={oos['gate_accuracy']:.3f} | - |")
+    return "\n".join(lines)
+
+
 def _render_header(section_store: Store) -> str:
     manifest = section_store.manifest
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -182,6 +289,26 @@ def write_results_md(sections: list[str]) -> None:
     RESULTS_MD.write_text("\n\n".join(sections) + "\n", encoding="utf-8")
 
 
+def _update_env_example_defaults(mode: str, chunk_strategy: str, min_score: float) -> None:
+    """Sync .env.example's shipped defaults to the measured winners (FR-040, SC-009) —
+    leaving a stale CHUNK_STRATEGY/RETRIEVAL_MODE here would silently contradict the
+    E1/E2 tables this same run just wrote."""
+    path = config.ROOT / ".env.example"
+    replacements = {
+        "RETRIEVAL_MODE=": f"RETRIEVAL_MODE={mode}\n",
+        "CHUNK_STRATEGY=": f"CHUNK_STRATEGY={chunk_strategy}\n",
+        "MIN_SCORE=": f"MIN_SCORE={min_score:.2f}\n",
+    }
+    out = []
+    for line in path.read_text(encoding="utf-8").splitlines(keepends=True):
+        for prefix, new_line in replacements.items():
+            if line.startswith(prefix):
+                line = new_line
+                break
+        out.append(line)
+    path.write_text("".join(out), encoding="utf-8")
+
+
 def main() -> int:
     e1_by_split = run_e1()
     winning_strategy = pick_winner_from_dev(e1_by_split["dev"])
@@ -196,11 +323,34 @@ def main() -> int:
                 f"mrr_pre={agg['mrr_pre']:.3f}"
             )
 
+    winning_mode = pick_mode_from_dev(e2_by_split["dev"])
+    print(f"E2 winner (from dev split): mode={winning_mode}")
+
+    winner_store = get_store(winning_strategy)
+    sweep_name = f"E3-{winning_mode}-{winning_strategy}"
+    sweep_rows = sweep_min_score(
+        "dev", mode=winning_mode, chunk_strategy=winning_strategy, store=winner_store
+    )
+    chosen = choose_min_score(sweep_rows)
+    chosen_floor = chosen["config"]["min_score"]
+    print(f"E3 chosen MIN_SCORE (from dev sweep {sweep_name}): {chosen_floor:.2f}")
+
+    headline = run_config(
+        split="test", mode=winning_mode, chunk_strategy=winning_strategy, min_score=chosen_floor,
+        experiment="headline", name=f"{winning_mode} + {winning_strategy} (final)", k=3,
+        store=winner_store,
+    )
+    write_result(headline, "test")
+
+    _update_env_example_defaults(winning_mode, winning_strategy, chosen_floor)
+
     section_store = get_store("section")
     sections = [
         _render_header(section_store),
         _render_e1_table(e1_by_split["dev"] + e1_by_split["test"], winning_strategy),
         _render_e2_table(e2_by_split["dev"] + e2_by_split["test"], baselines, winning_strategy),
+        _render_e3_table(sweep_rows, chosen, sweep_name),
+        _render_headline_table(headline),
     ]
     write_results_md(sections)
     print(f"wrote {RESULTS_MD}")

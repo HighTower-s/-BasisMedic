@@ -3,7 +3,7 @@
 - corpus_sha: `49b07d941e2b3e4b76a3fa0c7c94a434e6e5d5709952d25cb914acdf65252018`
 - git commit: `2d7000f`
 - embed model: `bge-m3`
-- generated: 2026-11-07T15:30:43Z
+- generated: 2026-11-07T15:33:18Z
 - splits: dev (10 cases, tuning only), test (30 cases, reporting only)
 - all case logs are synthetic
 
@@ -35,3 +35,41 @@ Varied variable: `mode`. Named baselines (FR-038): `R-BM25` (keyword-only) and `
 | test | hybrid | 0.962 | +0.115 | +0.019 | 0.904 | cosine + rare-token |
 
 Baselines, test split: R-BM25 recall@3_pre=0.846, R-Dense-naive recall@3_pre=0.942.
+
+### E3 — MIN_SCORE sweep (dev split only, post-gate)
+
+Experiment id: `E3-hybrid-fixed`. In-scope recall@3 and out-of-scope rejection rate traded off across the floor. **Dev cases only — the test set is never read here** (FR-041).
+
+| min_score | recall@3_post (in-scope) | oos_gate_accuracy | false_refusal_rate |
+|---|---|---|---|
+| 0.30 | 1.000 | 0.000 | 0.000 |
+| 0.35 | 1.000 | 0.000 | 0.000 |
+| 0.40 | 1.000 | 0.000 | 0.000 |
+| 0.45 | 1.000 | 0.000 | 0.000 |
+| 0.50 | 1.000 | 0.000 | 0.000 |
+| 0.55 | 1.000 | 0.500 | 0.000 |
+| 0.60 | 1.000 | 1.000 | 0.000  <- chosen |
+
+**Chosen MIN_SCORE = 0.60**, from dev sweep `E3-hybrid-fixed` (maximises recall@3_post + oos_gate_accuracy; ties broken toward the smaller floor).
+
+### Headline — final configuration on the test set (post-gate)
+
+mode=`hybrid`, chunk_strategy=`fixed`, k=3, min_score=0.60 (unchanged from the E3 dev sweep).
+
+| metric | value |
+|---|---|
+| recall@3 (post-gate) | 0.808 |
+| MRR (post-gate) | 0.788 |
+| out-of-scope gate accuracy | 1.000 |
+| false refusal rate | 0.154 |
+
+Per-difficulty slices (post-gate recall@3):
+
+| slice | recall@3_post | mrr_post |
+|---|---|---|
+| easy | 0.875 | 0.875 |
+| medium | 1.000 | 1.000 |
+| hard | 0.600 | 0.550 |
+| thai | 0.667 | 0.500 |
+| mixed | 1.000 | 1.000 |
+| out-of-scope | gate_accuracy=1.000 | - |

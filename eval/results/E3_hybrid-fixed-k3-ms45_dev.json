@@ -1,0 +1,371 @@
+{
+  "config": {
+    "experiment": "E3",
+    "name": "sweep min_score=0.45",
+    "split": "dev",
+    "mode": "hybrid",
+    "chunk_strategy": "fixed",
+    "k": 3,
+    "min_score": 0.45,
+    "embed_model": "bge-m3",
+    "corpus_sha": "49b07d941e2b3e4b76a3fa0c7c94a434e6e5d5709952d25cb914acdf65252018",
+    "git_commit": "2d7000f"
+  },
+  "aggregate": {
+    "n_in_scope": 8,
+    "n_out_of_scope": 2,
+    "recall_at_3_pre": 1.0,
+    "mrr_pre": 1.0,
+    "recall_at_3_post": 1.0,
+    "mrr_post": 1.0,
+    "oos_gate_accuracy": 0.0,
+    "false_refusal_rate": 0.0,
+    "by_difficulty": {
+      "easy": {
+        "recall_at_3_pre": 1.0,
+        "mrr_pre": 1.0,
+        "recall_at_3_post": 1.0,
+        "mrr_post": 1.0
+      },
+      "medium": {
+        "recall_at_3_pre": 1.0,
+        "mrr_pre": 1.0,
+        "recall_at_3_post": 1.0,
+        "mrr_post": 1.0
+      },
+      "hard": {
+        "recall_at_3_pre": 1.0,
+        "mrr_pre": 1.0,
+        "recall_at_3_post": 1.0,
+        "mrr_post": 1.0
+      },
+      "thai": {
+        "recall_at_3_pre": 1.0,
+        "mrr_pre": 1.0,
+        "recall_at_3_post": 1.0,
+        "mrr_post": 1.0
+      },
+      "mixed": {
+        "recall_at_3_pre": 0.0,
+        "mrr_pre": 0.0,
+        "recall_at_3_post": 0.0,
+        "mrr_post": 0.0
+      },
+      "oos": {
+        "gate_accuracy": 0.0
+      }
+    }
+  },
+  "cases": [
+    {
+      "case_id": "d01",
+      "difficulty": "easy",
+      "format": "st22_header",
+      "retrieved": [
+        {
+          "doc_id": "mem_tsv_tnew_page_alloc",
+          "chunk_id": "mem_tsv_tnew_page_alloc#f0",
+          "score": 0.03278688524590164,
+          "rank": 1
+        },
+        {
+          "doc_id": "auth_missing",
+          "chunk_id": "auth_missing#f0",
+          "score": 0.030621785881252923,
+          "rank": 2
+        },
+        {
+          "doc_id": "lock_table_overflow",
+          "chunk_id": "lock_table_overflow#f0",
+          "score": 0.0304147465437788,
+          "rank": 3
+        }
+      ],
+      "gated_out": false,
+      "recall_at_k_pre": 1.0,
+      "recall_at_k_post": 1.0,
+      "rr_pre": 1.0,
+      "rr_post": 1.0,
+      "correct_gate": true
+    },
+    {
+      "case_id": "d02",
+      "difficulty": "hard",
+      "format": "user_email",
+      "retrieved": [
+        {
+          "doc_id": "timeout_dialog",
+          "chunk_id": "timeout_dialog#f0",
+          "score": 0.03278688524590164,
+          "rank": 1
+        },
+        {
+          "doc_id": "user_locked",
+          "chunk_id": "user_locked#f0",
+          "score": 0.0315136476426799,
+          "rank": 2
+        },
+        {
+          "doc_id": "mem_tsv_tnew_page_alloc",
+          "chunk_id": "mem_tsv_tnew_page_alloc#f0",
+          "score": 0.03055037313432836,
+          "rank": 3
+        }
+      ],
+      "gated_out": false,
+      "recall_at_k_pre": 1.0,
+      "recall_at_k_post": 1.0,
+      "rr_pre": 1.0,
+      "rr_post": 1.0,
+      "correct_gate": true
+    },
+    {
+      "case_id": "d03",
+      "difficulty": "medium",
+      "format": "sm37_joblog",
+      "retrieved": [
+        {
+          "doc_id": "job_cancelled",
+          "chunk_id": "job_cancelled#f2",
+          "score": 0.03252247488101534,
+          "rank": 1
+        },
+        {
+          "doc_id": "user_locked",
+          "chunk_id": "user_locked#f0",
+          "score": 0.03252247488101534,
+          "rank": 2
+        },
+        {
+          "doc_id": "auth_missing",
+          "chunk_id": "auth_missing#f0",
+          "score": 0.03149801587301587,
+          "rank": 3
+        }
+      ],
+      "gated_out": false,
+      "recall_at_k_pre": 1.0,
+      "recall_at_k_post": 1.0,
+      "rr_pre": 1.0,
+      "rr_post": 1.0,
+      "correct_gate": true
+    },
+    {
+      "case_id": "d04",
+      "difficulty": "medium",
+      "format": "user_email",
+      "retrieved": [
+        {
+          "doc_id": "lock_old_entries",
+          "chunk_id": "lock_old_entries#f0",
+          "score": 0.03278688524590164,
+          "rank": 1
+        },
+        {
+          "doc_id": "transport_rc8",
+          "chunk_id": "transport_rc8#f0",
+          "score": 0.031754032258064516,
+          "rank": 2
+        },
+        {
+          "doc_id": "user_locked",
+          "chunk_id": "user_locked#f2",
+          "score": 0.0315136476426799,
+          "rank": 3
+        }
+      ],
+      "gated_out": false,
+      "recall_at_k_pre": 1.0,
+      "recall_at_k_post": 1.0,
+      "rr_pre": 1.0,
+      "rr_post": 1.0,
+      "correct_gate": true
+    },
+    {
+      "case_id": "d05",
+      "difficulty": "easy",
+      "format": "stms_log",
+      "retrieved": [
+        {
+          "doc_id": "transport_rc8",
+          "chunk_id": "transport_rc8#f0",
+          "score": 0.03278688524590164,
+          "rank": 1
+        },
+        {
+          "doc_id": "transport_rc12_or_stuck",
+          "chunk_id": "transport_rc12_or_stuck#f0",
+          "score": 0.03225806451612903,
+          "rank": 2
+        },
+        {
+          "doc_id": "lock_old_entries",
+          "chunk_id": "lock_old_entries#f0",
+          "score": 0.03036576949620428,
+          "rank": 3
+        }
+      ],
+      "gated_out": false,
+      "recall_at_k_pre": 1.0,
+      "recall_at_k_post": 1.0,
+      "rr_pre": 1.0,
+      "rr_post": 1.0,
+      "correct_gate": true
+    },
+    {
+      "case_id": "d06",
+      "difficulty": "medium",
+      "format": "sm59_test",
+      "retrieved": [
+        {
+          "doc_id": "rfc_connection_failed",
+          "chunk_id": "rfc_connection_failed#f0",
+          "score": 0.03278688524590164,
+          "rank": 1
+        },
+        {
+          "doc_id": "rfc_trfc_queue",
+          "chunk_id": "rfc_trfc_queue#f0",
+          "score": 0.031754032258064516,
+          "rank": 2
+        },
+        {
+          "doc_id": "timeout_dialog",
+          "chunk_id": "timeout_dialog#f3",
+          "score": 0.0315136476426799,
+          "rank": 3
+        }
+      ],
+      "gated_out": false,
+      "recall_at_k_pre": 1.0,
+      "recall_at_k_post": 1.0,
+      "rr_pre": 1.0,
+      "rr_post": 1.0,
+      "correct_gate": true
+    },
+    {
+      "case_id": "d07",
+      "difficulty": "hard",
+      "format": "chat_thai",
+      "retrieved": [
+        {
+          "doc_id": "update_terminated",
+          "chunk_id": "update_terminated#f0",
+          "score": 0.03278688524590164,
+          "rank": 1
+        },
+        {
+          "doc_id": "lock_old_entries",
+          "chunk_id": "lock_old_entries#f0",
+          "score": 0.031754032258064516,
+          "rank": 2
+        },
+        {
+          "doc_id": "update_deactivated",
+          "chunk_id": "update_deactivated#f0",
+          "score": 0.031754032258064516,
+          "rank": 3
+        }
+      ],
+      "gated_out": false,
+      "recall_at_k_pre": 1.0,
+      "recall_at_k_post": 1.0,
+      "rr_pre": 1.0,
+      "rr_post": 1.0,
+      "correct_gate": true
+    },
+    {
+      "case_id": "d08",
+      "difficulty": "medium",
+      "format": "user_email",
+      "retrieved": [
+        {
+          "doc_id": "user_locked",
+          "chunk_id": "user_locked#f0",
+          "score": 0.03252247488101534,
+          "rank": 1
+        },
+        {
+          "doc_id": "rfc_connection_failed",
+          "chunk_id": "rfc_connection_failed#f1",
+          "score": 0.032018442622950824,
+          "rank": 2
+        },
+        {
+          "doc_id": "auth_missing",
+          "chunk_id": "auth_missing#f0",
+          "score": 0.031054405392392875,
+          "rank": 3
+        }
+      ],
+      "gated_out": false,
+      "recall_at_k_pre": 1.0,
+      "recall_at_k_post": 1.0,
+      "rr_pre": 1.0,
+      "rr_post": 1.0,
+      "correct_gate": true
+    },
+    {
+      "case_id": "d09",
+      "difficulty": "medium",
+      "format": "hana_alert",
+      "retrieved": [
+        {
+          "doc_id": "mem_tsv_tnew_page_alloc",
+          "chunk_id": "mem_tsv_tnew_page_alloc#f1",
+          "score": 0.032266458495966696,
+          "rank": 1
+        },
+        {
+          "doc_id": "update_deactivated",
+          "chunk_id": "update_deactivated#f1",
+          "score": 0.031754032258064516,
+          "rank": 2
+        },
+        {
+          "doc_id": "mem_system_no_roll",
+          "chunk_id": "mem_system_no_roll#f0",
+          "score": 0.031054405392392875,
+          "rank": 3
+        }
+      ],
+      "gated_out": false,
+      "recall_at_k_pre": null,
+      "recall_at_k_post": null,
+      "rr_pre": null,
+      "rr_post": null,
+      "correct_gate": false
+    },
+    {
+      "case_id": "d10",
+      "difficulty": "medium",
+      "format": "other",
+      "retrieved": [
+        {
+          "doc_id": "update_deactivated",
+          "chunk_id": "update_deactivated#f0",
+          "score": 0.03200204813108039,
+          "rank": 1
+        },
+        {
+          "doc_id": "rfc_trfc_queue",
+          "chunk_id": "rfc_trfc_queue#f2",
+          "score": 0.031544957774465976,
+          "rank": 2
+        },
+        {
+          "doc_id": "update_terminated",
+          "chunk_id": "update_terminated#f0",
+          "score": 0.031099324975891997,
+          "rank": 3
+        }
+      ],
+      "gated_out": false,
+      "recall_at_k_pre": null,
+      "recall_at_k_post": null,
+      "rr_pre": null,
+      "rr_post": null,
+      "correct_gate": false
+    }
+  ]
+}

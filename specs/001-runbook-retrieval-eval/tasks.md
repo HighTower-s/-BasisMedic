@@ -272,13 +272,22 @@ out-of-scope logs and wrongly rejecting in-scope ones — with the test set mech
 **Independent Test**: Run the sweep, confirm one row per floor value with both rates, and confirm it
 raises if handed the test split.
 
-- [ ] T071 [US5] Implement `sweep_min_score(split)` in `eval/run_all.py` as experiment E3: floors 0.30 to 0.60 in steps of 0.05 on the configuration from E2, reporting **post-gate** in-scope recall@3 and out-of-scope rejection rate per value; raise `ValueError` for any `split` other than `"dev"` (FR-039, FR-041, research.md R-01)
-- [ ] T072 [P] [US5] Write `tests/test_sweep_guard.py` asserting `sweep_min_score("test")` raises and that no code path in the sweep loads `eval/cases_test.jsonl` (FR-041, SC-009)
-- [ ] T073 [US5] Generate the E3 table into `eval/results/results.md` with the chosen `MIN_SCORE` and the identifier of the sweep run it came from, and update `.env.example`'s `MIN_SCORE` to the measured value (FR-040, SC-009)
-- [ ] T074 [US5] Generate the headline test-set table into `eval/results/results.md`: the final configuration, **post-gate**, with out-of-scope gate accuracy and false-refusal rate reported for the chosen floor, unchanged from the dev sweep (FR-040, SC-009)
+- [X] T071 [US5] Implement `sweep_min_score(split)` in `eval/run_all.py` as experiment E3: floors 0.30 to 0.60 in steps of 0.05 on the configuration from E2, reporting **post-gate** in-scope recall@3 and out-of-scope rejection rate per value; raise `ValueError` for any `split` other than `"dev"` (FR-039, FR-041, research.md R-01). **"The configuration from E2"** is resolved as the mode picked by a new `pick_mode_from_dev()`, mirroring `pick_winner_from_dev()` from Phase 6 — on the dev split all three modes tie at recall@3_pre=1.0 (n=8 ceiling effect), broken toward `hybrid` then `dense` then `bm25` as the documented, deterministic tie-break.
+- [X] T072 [P] [US5] Write `tests/test_sweep_guard.py` asserting `sweep_min_score("test")` raises and that no code path in the sweep loads `eval/cases_test.jsonl` (FR-041, SC-009)
+- [X] T073 [US5] Generate the E3 table into `eval/results/results.md` with the chosen `MIN_SCORE` and the identifier of the sweep run it came from, and update `.env.example`'s `MIN_SCORE` to the measured value (FR-040, SC-009). **Extended beyond the task's literal wording**: `CHUNK_STRATEGY` and `RETRIEVAL_MODE` are also synced to the E1/E2 measured winners (`fixed`, `hybrid`) — leaving `CHUNK_STRATEGY=section` as shipped would have silently contradicted E1's own table, which found `fixed` wins.
+- [X] T074 [US5] Generate the headline test-set table into `eval/results/results.md`: the final configuration, **post-gate**, with out-of-scope gate accuracy and false-refusal rate reported for the chosen floor, unchanged from the dev sweep (FR-040, SC-009)
 
 **Checkpoint**: the refusal threshold is justified by evidence, and the test set has not been tuned
 against. **SC-009 met.**
+
+**Real measured outcome**: the dev sweep (`mode=hybrid, chunk_strategy=fixed`) found
+`MIN_SCORE=0.60` gives perfect in-scope recall (1.000) **and** perfect out-of-scope rejection
+(1.000) on dev, with zero false refusals — better than the 0.40 placeholder, which left
+out-of-scope rejection at 0.000 up to floor 0.50. **This directly resolves the Phase 5 finding**:
+the HANA out-of-scope query (dense cosine 0.528) is now correctly refused at min_score=0.60,
+verified live against the gateway. Headline test-set result at the chosen floor: recall@3=0.808,
+MRR=0.788, oos_gate_accuracy=1.000, false_refusal_rate=0.154 — the false-refusal cost of a floor
+high enough to catch the HANA case, reported honestly rather than hidden.
 
 ---
 
