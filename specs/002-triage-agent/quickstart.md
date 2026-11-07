@@ -34,8 +34,14 @@ uv run python -m app.cli triage --file examples/tsv_dump.log --show-trace
 ```
 
 **Expected**: at least one `search_runbook` call shown in the trace (stderr); a result on stdout with
-`category: memory_dump`, transaction codes drawn from `mem_tsv_tnew_page_alloc`'s own front-matter, and
-`sources` resolving to sections of that same runbook.
+`category: memory_dump` and transaction codes drawn from `mem_tsv_tnew_page_alloc`'s own front-matter. If
+`sources` is non-empty, every entry resolves to a section of that same runbook — verified by code
+(`verify_citations`), never just asserted. **Note from a live run**: on `gemma-4-E4B-it`, the model frequently omits `sources` even when it clearly
+used the retrieved evidence (visible in the trace) — this is a real, measured model-citation-discipline
+gap, not a bug in `verify_citations` (which correctly drops anything *fabricated*, but cannot invent a
+citation the model never attempted, and does not currently flag an *omitted* citation as unverified —
+E4's `unverified_claim_rate` counts dropped/flagged claims, not missing ones). Worth naming in the
+Limitations section rather than treated as a solved problem.
 
 → **User Story 1**, SC-002 (citations resolvable), SC-003 (T-codes verified).
 

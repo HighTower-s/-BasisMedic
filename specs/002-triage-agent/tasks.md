@@ -268,18 +268,18 @@ this rather than being silently zero because such cases were discarded instead o
 
 ## Phase 8: Polish & Cross-Cutting Concerns
 
-- [ ] T045 Extend `README.md` with a Triage section: setup (none beyond Feature 1's), the `triage` command, an
+- [X] T045 Extend `README.md` with a Triage section: setup (none beyond Feature 1's), the `triage` command, an
   example run against `examples/tsv_dump.log`, the E4 result table, and agent-specific limitations (Constitution
   IX, FR-016)
-- [ ] T046 [P] Walk `specs/002-triage-agent/quickstart.md` steps 0–8 on the current clone and fix any divergence
+- [X] T046 [P] Walk `specs/002-triage-agent/quickstart.md` steps 0–8 on the current clone and fix any divergence
   between the documented and actual behaviour (Constitution IX) — same discipline as Feature 1's T081, including
   checking for any line-ending or caching surprises analogous to what Feature 1's walkthrough found
-- [ ] T047 Commit `eval/results/E4_*.json` and the extended `results.md`/`failures.jsonl`, so every reported
+- [X] T047 Commit `eval/results/E4_*.json` and the extended `results.md`/`failures.jsonl`, so every reported
   e2e number ships with the config that produced it (Constitution I)
-- [ ] T048 Re-check this feature against Constitution I–X and record the outcome in
+- [X] T048 Re-check this feature against Constitution I–X and record the outcome in
   `specs/002-triage-agent/plan.md` § Post-Design Re-Check, noting any principle the implementation strained —
   same discipline as Feature 1's T083
-- [ ] T049 [P] Confirm `examples/tsv_dump.log`, `examples/hana_disk_full.log`, and `examples/mixed_lock_update.log`
+- [X] T049 [P] Confirm `examples/tsv_dump.log`, `examples/hana_disk_full.log`, and `examples/mixed_lock_update.log`
   (already created by Feature 1) each produce the intended `triage` demo outcome (cited result, forced refusal,
   honestly-reported single-category limitation on the mixed log per SC-010) — no new example files needed
 

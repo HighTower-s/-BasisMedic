@@ -3,7 +3,7 @@
 - corpus_sha: `49b07d941e2b3e4b76a3fa0c7c94a434e6e5d5709952d25cb914acdf65252018`
 - git commit: `f06f1e5`
 - embed model: `bge-m3`
-- generated: 2026-11-07T19:09:52Z
+- generated: 2026-11-07T19:13:16Z
 - splits: dev (10 cases, tuning only), test (30 cases, reporting only)
 - all case logs are synthetic
 

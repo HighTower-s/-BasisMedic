@@ -220,3 +220,55 @@ changed:
    step is what makes each independently unit-testable per Constitution VIII.
 
 No new Complexity Tracking entries arose from Phase 1.
+
+### Implementation Re-Check (post Phase 8, T048)
+
+Re-evaluated against all ten principles after full implementation (Phases 3–8) and a literal
+walkthrough of `quickstart.md`. Still **PASS** on all ten. Several real defects were caught and
+fixed during implementation — recorded here rather than smoothed over, per Principle II:
+
+1. **Principle III strained, then fixed, by an incomplete verification check.** `verify_tcodes`
+   originally checked only the top-level `tcodes` list. A live smoke test against the real gateway
+   showed the model placing a fabricated value (the *program name*, not a T-code) in `Step.tcode`,
+   which passed through completely unverified — silently contradicting `data-model.md § 1`'s own
+   stated invariant that `Step.tcode` "must be a key of `data/tcodes.json` by the time
+   `verify_tcodes` has run." Fixed so `verify_tcodes` sanitises every `Step.tcode` the same way as
+   the top-level list, clearing an unverified one to `None` and recording it in
+   `unverified_tcodes`. This was found by *running the system*, not by reading the contract —
+   exactly the gap a live smoke test is for.
+2. **A contract-level conflict was caught before it became a bug.** `contracts/tools.md` specified
+   a 3–300 character bound for `search_runbook`'s query argument; Feature 1's `search()` already
+   enforces a 10-character minimum (`MIN_QUERY_CHARS`). A 3-char-minimum tool bound would have let
+   through queries the underlying service itself rejects. Fixed to reuse Feature 1's constants
+   directly instead of inventing a second, narrower, conflicting bound — caught during
+   implementation planning for T016, before any code was written against the wrong number.
+3. **A schema/contract inconsistency was caught the same way.** `contracts/file-formats.md` and
+   `contracts/cli.md` showed an `out_of_scope` result with empty `steps`, but `data-model.md`'s own
+   `min_length=1` constraint on `TriageResult.steps` (and FR-006, which never exempts
+   `out_of_scope`) requires at least one step. Fixed both contract examples to show a generic
+   "investigate manually or escalate" step, rather than silently relaxing the schema to match
+   stale prose written before the schema was implemented.
+4. **`quickstart.md` overclaimed what the live system actually does.** Step 1's original text
+   asserted `sources` would resolve to the retrieved runbook's sections. Running it twice against
+   the real gateway showed `sources` empty both times, even though the trace confirms the model
+   used the retrieved evidence — `verify_citations` is working correctly (nothing fabricated gets
+   through), but the model frequently omits citations it could have made. Fixed the quickstart to
+   describe this honestly as a measured model-citation-discipline gap rather than asserting a
+   guarantee the system does not make.
+5. **`format_result()`'s return shape had to grow to support honest e2e metrics.** Phase 3 shipped
+   `format_result() -> TriageResult`. Building `eval/run_e2e.py`'s `valid_output_rate` metric in
+   Phase 6 required knowing *whether the fallback was used*, which a bare `TriageResult` cannot
+   distinguish from a normal low-confidence answer. Changed to a `FormatOutcome(result, repaired,
+   fell_back)` dataclass, and `triage()` gained an `outcome` out-parameter (mirroring the existing
+   `trace` parameter) to surface this — and the citation-drop flag — to the eval harness without
+   the CLI or any other caller needing to care. All three existing call sites and their tests were
+   updated.
+
+**The headline finding this feature exists to produce, stated plainly (FR-022):** the full agent
+does **not** beat either named baseline (`E-NoRAG`, `E-ClassicRAG`) on category accuracy or T-code
+recall on the 30-case test set — `E-ClassicRAG`, a single non-agentic search with no loop, scores
+higher on both (0.700/0.442 vs the agent's 0.567/0.365). The agent does win on
+`unverified_claim_rate` (0.467 vs 0.767 for both baselines): more cautious about what it asserts,
+less often right overall. This is reported in `README.md` and `eval/results/results.md` without
+reframing, consistent with Principle II and with Feature 1's own E1 finding (`fixed` chunking
+beating `section` against the project's own hypothesis).

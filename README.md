@@ -1,11 +1,18 @@
 # BasisMedic
 
-A measured, evaluated RAG retrieval system over a hand-written SAP Basis incident runbook
-corpus. Paste an error log (or free-text description); get back up to 3 cited runbook sections,
-or an explicit "nothing relevant" refusal — never a confident guess. This repository is Feature 1
-of 3 for a university capstone project (*Building LLM-Powered Applications*): the runbook corpus,
-the labelled evaluation set, and measured retrieval. No LLM-generated answers exist yet — that is
-Feature 2's job, built on top of the `search()` service this feature delivers.
+A measured, evaluated RAG + agent system that triages SAP Basis incidents. Paste an error log and
+get back a validated structured result — incident category, transaction codes to open in order,
+step-by-step checks, and citations — or an explicit "nothing relevant" refusal. Every citation and
+every T-code is verified by code against real evidence, never trusted from the model. This
+repository covers Features 1 and 2 of 3 for a university capstone project (*Building LLM-Powered
+Applications*):
+
+- **Feature 1** — the runbook corpus, the labelled evaluation set, and measured hybrid retrieval
+  (`search()`).
+- **Feature 2** — the triage agent: a bounded tool-calling loop built on top of `search()`,
+  producing a verified structured `TriageResult`, measured end-to-end against named baselines.
+
+Feature 3 (an HTTP API and web UI) has not started.
 
 ## Why
 
@@ -48,6 +55,23 @@ relevance floor returns up to 3 hits, each with a `doc_id#section` address that 
 corpus text. A log the corpus does not cover returns `NO_RELEVANT_RUNBOOK` with exit code 0 — a
 correct refusal is a success, not an error.
 
+## Triage (Feature 2)
+
+```bash
+uv run python -m app.cli triage --file examples/tsv_dump.log --show-trace
+uv run python -m app.cli triage "paste a log here"
+uv run python -m app.cli triage --file examples/hana_disk_full.log   # explicit refusal, forced in code
+```
+
+A native tool-calling loop (`search_runbook`, `lookup_tcode`; `MAX_STEPS=5`, read-only,
+allow-listed) gathers evidence, then a no-tools formatter call produces a structured result with a
+capped repair loop and a deterministic fallback on exhaustion. Before the result is returned:
+every citation is checked against evidence actually retrieved that request (a fabricated one is
+dropped), every T-code is checked against the allow-list (an unverified one is flagged, not
+silently trusted), and if retrieval found nothing at all the category is forced to `out_of_scope`
+in code — never left for the model to decide. `--show-trace` prints every tool call made, to
+stderr, for diagnosing a surprising answer.
+
 ## Evaluate
 
 ```bash
@@ -63,12 +87,17 @@ number always corresponds to a committed matrix). Runs, in order:
 - **E3** — a `MIN_SCORE` sweep on the **dev split only** (mechanically refuses to touch the test
   set — `sweep_min_score("test")` raises)
 - the **headline** test-set result at the chosen floor, post-gate
-- `eval/results/failures.jsonl` — every wrong case at the headline config, with expected vs
-  retrieved and a failure type
+- **E4** — the full triage agent vs two named baselines (`E-NoRAG`: no retrieval at all;
+  `E-ClassicRAG`: one non-agentic search, no loop), end-to-end, all through the identical
+  verification pipeline
+- `eval/results/failures.jsonl` — every wrong/fallback/unverified case, retrieval- and
+  agent-level, each with a failure type
 
 Every number is written to `eval/results/*.json` next to the exact config that produced it
-(`corpus_sha`, `git_commit`, mode, chunk strategy, `k`, `min_score`). Run it twice — the retrieval
-metrics are byte-identical.
+(`corpus_sha`, `git_commit`, mode, chunk strategy/`k`/`min_score` for retrieval, `max_steps`/
+`repair_attempts`/`chat_model` for the agent). Run it twice — both the retrieval and the agent's
+verification-level outcomes are byte-identical, the agent via a content-addressed chat-completion
+cache (`data/chat_cache/`, git-ignored) mirroring the embedding cache.
 
 ## Results (test split, post-gate, headline configuration)
 
@@ -90,6 +119,21 @@ what correctly refuses out-of-scope queries (verified against a HANA log-volume 
 earlier, unvalidated 0.40 default let through); it costs a 0.154 false-refusal rate on in-scope
 hard cases with no exact error code, reported rather than hidden.
 
+### End-to-end (Feature 2, test split, n=30)
+
+| config | category_accuracy | tcode_recall | unverified_claim_rate | valid_output_rate |
+|---|---|---|---|---|
+| E-NoRAG (no retrieval) | 0.600 | 0.154 | 0.767 | 0.933 |
+| E-ClassicRAG (one search, no loop) | 0.700 | 0.442 | 0.767 | 1.000 |
+| **agent** (full bounded loop) | 0.567 | 0.365 | 0.467 | 0.967 |
+
+**Stated plainly, not reframed**: the full agent does **not** beat either named baseline on
+category accuracy or T-code recall — `E-ClassicRAG`, a single non-agentic search, scores higher on
+both. The agent does win on `unverified_claim_rate` (0.467 vs 0.767 for both baselines): it is
+measurably more cautious about what it asserts, even though it is less often right overall. This is
+a genuine finding about this small course-gateway model's tool-use reliability, not a defect in the
+verification layer — see `eval/results/results.md` § Limitations.
+
 ## Search latency (SC-013)
 
 Measured on the author's machine, `--mode hybrid` (one query-embedding round trip to the gateway,
@@ -107,21 +151,30 @@ search itself.
 - Single-author bias in both the runbooks and the eval-case labels.
 - The BM25 tokenizer (`[A-Za-z0-9_/]+`) cannot segment Thai text — Thai queries are carried
   entirely by the dense/embedding side.
+- The agent's `sources` citations are frequently empty even when the trace shows it used the
+  retrieved evidence — a model-citation-discipline gap on `gemma-4-E4B-it`, not a verification bug
+  (a *fabricated* citation is reliably caught and dropped; an *omitted* one is not currently
+  flagged as a separate failure mode).
+- A log describing two simultaneous problems gets one category — the schema has no multi-label
+  support; handled without crashing, reported as a known finding (spec SC-010), not hidden.
 
 Full detail: [`eval/results/results.md`](eval/results/results.md) § Limitations.
 
 ## Project layout
 
 ```
-app/            config, llm (the only gateway caller), normalize, cli, retrieval/
-data/           runbooks/, tcodes.json, index/ (generated, committed), cache/ (generated, ignored)
-eval/           cases_dev.jsonl, cases_test.jsonl, schema, metrics, run_retrieval, run_all, results/
+app/            config, llm (chat + embed, the only gateway caller), normalize, cli,
+                retrieval/ (Feature 1), agent/ (Feature 2: tools, loop, formatter, verify, fallback),
+                triage_service.py (Feature 2 service entry point)
+data/           runbooks/, tcodes.json, index/ (generated, committed), cache/ + chat_cache/ (generated, ignored)
+eval/           cases_dev.jsonl, cases_test.jsonl, schema, metrics, run_retrieval, run_e2e, run_all, results/
 examples/       sample logs for the commands above (never runbook text)
 tests/          offline, gateway mocked — uv run pytest
-specs/001-runbook-retrieval-eval/   spec, plan, research, data model, contracts, tasks
+specs/001-runbook-retrieval-eval/   Feature 1: spec, plan, research, data model, contracts, tasks
+specs/002-triage-agent/             Feature 2: spec, plan, research, data model, contracts, tasks
 ```
 
-## Out of scope (this feature)
+## Out of scope (both features)
 
-LLM-generated answers, the triage agent, structured triage output, any HTTP API or UI,
-multi-turn conversation, and any live SAP system connection — all deferred to Feature 2 or later.
+Any HTTP API or web UI (Feature 3, not started), multi-turn conversation, connecting to a live SAP
+system, and executing any fix.
