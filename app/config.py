@@ -8,6 +8,7 @@ RUNBOOK_DIR = ROOT / "data" / "runbooks"
 TCODES_PATH = ROOT / "data" / "tcodes.json"
 INDEX_DIR = ROOT / "data" / "index"
 CACHE_DIR = ROOT / "data" / "cache"
+CHAT_CACHE_DIR = ROOT / "data" / "chat_cache"
 
 
 class ConfigError(Exception):
@@ -59,6 +60,14 @@ def api_key() -> str:
 
 def embed_model() -> str:
     return _str("EMBED_MODEL", "bge-m3")
+
+
+def chat_model() -> str:
+    return _str("CHAT_MODEL", "gemma-4-E4B-it")
+
+
+def max_steps() -> int:
+    return _int("MAX_STEPS", 5)
 
 
 def retrieval_mode() -> str:

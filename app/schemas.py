@@ -3,7 +3,7 @@
 from pathlib import Path
 from typing import Literal
 
-from pydantic import BaseModel, Field, HttpUrl, field_validator
+from pydantic import BaseModel, Field, HttpUrl, field_validator, model_validator
 
 Category = Literal[
     "memory_dump",
@@ -44,6 +44,13 @@ LogFormat = Literal[
     "other",
 ]
 FailureType = Literal["retrieval_miss", "gate_false_refusal", "gate_missed_oos", "partial_recall"]
+
+# Feature 2 — triage agent
+Confidence = Literal["high", "medium", "low"]
+FailureTypeE2E = Literal[
+    "category_wrong", "tcode_recall_miss", "unverified_claim",
+    "repair_exhausted", "loop_exhausted", "schema_invalid_after_fallback",
+]
 
 SECTION_ORDER: tuple[SectionName, ...] = (
     "Symptoms",
@@ -137,3 +144,29 @@ class IndexManifest(BaseModel):
     n_vectors: int
     built_at: str
     git_commit: str | None
+
+
+class Step(BaseModel):
+    """One checklist item in a TriageResult."""
+
+    action: str = Field(min_length=5)
+    tcode: str | None = None
+
+
+class TriageResult(BaseModel):
+    """The validated structured triage output. See specs/002-triage-agent/data-model.md § 2."""
+
+    category: EvalCategory
+    summary: str = Field(max_length=300)
+    tcodes: list[str] = Field(max_length=6)
+    unverified_tcodes: list[str] = Field(default_factory=list)
+    steps: list[Step] = Field(min_length=1, max_length=8)
+    escalate_to: EscalateTo | None = None
+    sources: list[str] = Field(default_factory=list)
+    confidence: Confidence
+
+    @model_validator(mode="after")
+    def _out_of_scope_shape(self) -> "TriageResult":
+        if self.category == "out_of_scope" and (self.tcodes or self.sources):
+            raise ValueError("out_of_scope result must have empty tcodes and sources (FR-012)")
+        return self

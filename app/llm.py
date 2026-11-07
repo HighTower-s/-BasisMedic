@@ -1,6 +1,7 @@
-"""The ONLY module in the project that calls the embedding gateway (Constitution VI).
+"""The ONLY module in the project that calls the gateway (Constitution VI).
 Wraps openai.embeddings.create with a disk cache keyed by sha256(model|text) so repeated
-runs are both free and bit-identical (R-09, FR-036, SC-004)."""
+runs are both free and bit-identical (R-09, FR-036, SC-004). Also the only caller of
+chat completions (Feature 2), cached the same way (specs/002-triage-agent/research.md R-09)."""
 
 import hashlib
 import json
@@ -91,3 +92,69 @@ def embed_with_cache_stats(
 
     assert all(r is not None for r in results)
     return results, hits, misses  # type: ignore[return-value]
+
+
+def _chat_cache_key(model: str, temperature: float, messages: list[dict], tools: list[dict] | None) -> str:
+    payload = json.dumps(
+        {
+            "model": model,
+            "temperature": temperature,
+            "messages": messages,
+            "tools": tools or [],
+        },
+        sort_keys=True,
+    )
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def _chat_cache_path(key: str) -> Path:
+    return config.CHAT_CACHE_DIR / f"{key}.json"
+
+
+def _chat_cache_get(key: str) -> dict | None:
+    path = _chat_cache_path(key)
+    if not path.exists():
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    return data.get("response")
+
+
+def _chat_cache_put(key: str, model: str, temperature: float, response: dict) -> None:
+    config.CHAT_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    _chat_cache_path(key).write_text(
+        json.dumps({"model": model, "temperature": temperature, "response": response}),
+        encoding="utf-8",
+    )
+
+
+def chat(
+    messages: list[dict],
+    *,
+    tools: list[dict] | None = None,
+    temperature: float = 0,
+    model: str | None = None,
+) -> dict:
+    """Returns the raw chat-completion response as a plain dict. Content-addressed cache
+    (research.md R-09): a cache hit never calls the gateway."""
+    model = model or config.chat_model()
+    key = _chat_cache_key(model, temperature, messages, tools)
+
+    cached = _chat_cache_get(key)
+    if cached is not None:
+        return cached
+
+    try:
+        client = _client()
+        kwargs: dict = {"model": model, "messages": messages, "temperature": temperature}
+        if tools:
+            kwargs["tools"] = tools
+        response = client.chat.completions.create(**kwargs)
+    except Exception as exc:
+        raise UpstreamError(f"chat call to {model!r} failed: {exc}") from exc
+
+    response_dict = response.model_dump()
+    _chat_cache_put(key, model, temperature, response_dict)
+    return response_dict
