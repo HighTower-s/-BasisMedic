@@ -1,0 +1,11 @@
+{
+  "corpus_sha": "49b07d941e2b3e4b76a3fa0c7c94a434e6e5d5709952d25cb914acdf65252018",
+  "chunk_strategy": "section",
+  "embed_model": null,
+  "embed_dim": null,
+  "n_runbooks": 16,
+  "n_chunks": 96,
+  "n_vectors": 0,
+  "built_at": "2026-11-07T14:00:57Z",
+  "git_commit": "3b55baa"
+}
