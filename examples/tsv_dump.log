@@ -1,0 +1,5 @@
+Runtime Errors         TSV_TNEW_PAGE_ALLOC_FAILED
+Short Text              No more storage space available for extending an internal table.
+Program                 ZFI_MONTHLY_REPORT
+User and Transaction    Client 100, User BATCH_FI, background job ZFI_MONTHLY
+Date and Time           2026-11-07 02:15:03

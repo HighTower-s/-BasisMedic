@@ -137,10 +137,16 @@ def load_corpus(
 
 
 def corpus_sha(runbook_dir: Path | None = None, tcodes_path: Path | None = None) -> str:
-    """Identity of the corpus: changes whenever any runbook or the allow-list changes."""
+    """Identity of the corpus: changes whenever any runbook or the allow-list changes.
+
+    Hashes text content with line endings normalised to '\\n', not raw bytes — git's
+    core.autocrlf rewrites CRLF/LF on checkout depending on OS and config, which would
+    otherwise make this hash differ across machines (or even across a checkout on the
+    same machine) for byte-identical logical content, silently breaking the
+    reproducibility guarantee (SC-004, R-06) and causing false StaleIndexError."""
     runbook_dir = runbook_dir or config.RUNBOOK_DIR
     tcodes_path = tcodes_path or config.TCODES_PATH
     digest = hashlib.sha256()
     for path in sorted(runbook_dir.glob("*.md")) + [tcodes_path]:
-        digest.update(path.read_bytes())
+        digest.update(path.read_text(encoding="utf-8").encode("utf-8"))
     return digest.hexdigest()

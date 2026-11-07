@@ -9,7 +9,7 @@
     "min_score": 0.5,
     "embed_model": "bge-m3",
     "corpus_sha": "49b07d941e2b3e4b76a3fa0c7c94a434e6e5d5709952d25cb914acdf65252018",
-    "git_commit": "2d7000f"
+    "git_commit": "f06f1e5"
   },
   "aggregate": {
     "n_in_scope": 8,

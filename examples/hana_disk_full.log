@@ -1,0 +1,2 @@
+HANA alert 2: Log volume /hana/log/HDB is 98% full. Log backups failing since 04:00.
+No further detail available; monitoring team flagged this from the HANA Cockpit alert list.

@@ -1,11 +1,11 @@
 {
   "corpus_sha": "49b07d941e2b3e4b76a3fa0c7c94a434e6e5d5709952d25cb914acdf65252018",
-  "chunk_strategy": "section",
+  "chunk_strategy": "fixed",
   "embed_model": "bge-m3",
   "embed_dim": 1024,
   "n_runbooks": 16,
-  "n_chunks": 96,
-  "n_vectors": 96,
-  "built_at": "2026-11-07T15:24:26Z",
-  "git_commit": "2d7000f"
+  "n_chunks": 53,
+  "n_vectors": 53,
+  "built_at": "2026-11-07T15:44:41Z",
+  "git_commit": "f06f1e5"
 }

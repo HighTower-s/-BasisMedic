@@ -83,10 +83,10 @@ This is the checkpoint that matters most, and it comes before any embedding exis
 
 ```bash
 uv run python -m app.cli ingest --strategy section --no-embed    # chunks + BM25 only; no gateway calls
-uv run python -m eval.run_retrieval --split test --mode bm25 --strategy section --name R-BM25
+uv run python -m eval.run_retrieval --split test --mode bm25 --strategy section --min-score 0.40 --name R-BM25 --experiment E0
 ```
 
-**Expected**: a complete results file at `eval/results/E2_bm25-section-k3_test.json` with real
+**Expected**: a complete results file at `eval/results/E0_bm25-section-k3-ms40_test.json` with real
 recall@3, MRR, out-of-scope gate accuracy, and false-refusal rate, plus a per-case breakdown and the
 config block including `corpus_sha` and the git commit. The numbers may be poor — the harness is what
 is being validated.
@@ -97,7 +97,7 @@ is being validated.
 Then prove determinism:
 
 ```bash
-uv run python -m eval.run_retrieval --split test --mode bm25 --strategy section --name R-BM25
+uv run python -m eval.run_retrieval --split test --mode bm25 --strategy section --min-score 0.40 --name R-BM25 --experiment E0
 ```
 
 **Expected**: identical metrics. → **FR-036**, **SC-004**.
@@ -166,9 +166,15 @@ Three more worth running by hand:
 ```bash
 uv run python -m app.cli search "  "                        # expect exit 2, clear message
 uv run python -m app.cli search --min-score 0.95 "Runtime Errors  TIME_OUT
-Short Text  Time limit exceeded."                           # expect fewer or zero hits
+Short Text  Time limit exceeded."                           # expect the same or fewer hits
 uv run python -m app.cli search --mode dense "…"            # against a --no-embed index: exit 5
 ```
+
+**Note on the 0.95 example**: `TIME_OUT` is itself a rare token (research.md R-03 shape), so it can
+rescue a result even at a very high floor — that is the gate working as designed (an exact error
+code should not be refused just because embedding similarity is diluted by noise), not a violation
+of monotonicity. Monotonicity (FR-018, US3-3) means raising the floor never *increases* the result
+count for a fixed query — it does not promise zero results exist at every high floor.
 
 → **FR-019** (invalid query rejected), **FR-018** + US3-3 (floor monotonicity), and the no-silent-
 downgrade rule from contracts/cli.md.

@@ -245,3 +245,37 @@ the design work changed:
    violating it fail a test.
 
 No new Complexity Tracking entries arose from Phase 1.
+
+### Implementation Re-Check (post Phase 9, T083)
+
+Re-evaluated against all ten principles after full implementation (Phases 3–9) and a literal
+walkthrough of `quickstart.md`. Still **PASS** on all ten. Two real defects were found and fixed
+during the walkthrough — recorded here because Principle II requires strained spots named, not
+smoothed over:
+
+1. **Principle I / II strained by a line-ending bug, now fixed.** `corpus_sha()` originally hashed
+   raw file bytes. Git's `core.autocrlf` (set `true` on the author's machine) rewrites CRLF/LF on
+   checkout, so a `git checkout` of an unmodified runbook silently produced a **different**
+   `corpus_sha` than before — discovered live when a deliberate stale-index test (quickstart step
+   7) reverted cleanly by `git diff` but still changed the hash. This directly threatened SC-004's
+   reproducibility claim: the same logical corpus could hash differently across machines, OSes, or
+   even repeated checkouts on one machine, which would silently invalidate every committed
+   `corpus_sha` in `eval/results/*.json` on a clean clone. Fixed by hashing `read_text()` (universal
+   newlines) instead of `read_bytes()` — content-based, not byte-representation-based. No committed
+   result file needed re-measuring once fixed (the underlying content is unchanged, only the stable
+   hash of it), but the index itself had to be rebuilt once to pick up the corrected hash.
+2. **Principle VI's single-service-path assumption exposed an aliasing bug.** `eval/run_all.py`'s
+   `INDEX_DIRS["section"]` originally aliased the main CLI's `data/index/` directory. That was
+   silently correct only while `section` happened to be the shipped default; once E1's own measured
+   result changed the default to `fixed` (Phase 7), the alias meant `get_store("section")` would
+   load a `fixed`-chunked index and treat it as `section`-chunked — a real bug that `_assert_comparable`
+   could not catch because it checks `corpus_sha`/`split` agreement, not chunk-strategy identity
+   against the directory's name. Fixed by giving `run_all.py` its own dedicated
+   `data/index_section/` / `data/index_fixed/` directories, fully decoupled from the CLI's
+   `data/index/`. `get_store()` was also hardened to rebuild on `StaleIndexError`, not just on a
+   missing manifest, so a future corpus edit does not silently fail the whole experiment run.
+
+Neither defect changed any previously reported number — the measured recall@3/MRR/gate-accuracy
+values are identical before and after both fixes, confirmed by re-running `eval/run_all.py` and
+diffing the output. Both were caught specifically *because* T081 required running the documented
+commands rather than reading the plan and assuming it matched the code.

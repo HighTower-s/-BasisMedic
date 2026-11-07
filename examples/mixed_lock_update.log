@@ -1,0 +1,4 @@
+System log, client 100, 2026-11-07 09:40:00
+09:40:01  Update was terminated: table VBAK could not be updated, V1 update step failed
+09:40:02  Enqueue: lock table is full, SAP lock could not be set for object VBAK, table entry 48213
+09:40:03  User SD_USER01 reports the sales order could not be saved

@@ -11,7 +11,7 @@ from pathlib import Path
 
 from app import config
 from app.retrieval.ingest import build_index
-from app.retrieval.store import Store
+from app.retrieval.store import StaleIndexError, Store
 from eval.run_retrieval import (
     append_failures,
     build_failure_records,
@@ -21,7 +21,7 @@ from eval.run_retrieval import (
 )
 
 INDEX_DIRS = {
-    "section": config.ROOT / "data" / "index",
+    "section": config.ROOT / "data" / "index_section",
     "fixed": config.ROOT / "data" / "index_fixed",
 }
 
@@ -30,10 +30,16 @@ RESULTS_MD = config.ROOT / "eval" / "results" / "results.md"
 
 
 def get_store(strategy: str, embed: bool = True) -> Store:
+    """Builds the experiment index on first use, and rebuilds it if the corpus has
+    moved on since (StaleIndexError) rather than failing the whole experiment run."""
     index_dir = INDEX_DIRS[strategy]
     if not (index_dir / "manifest.json").exists():
         build_index(strategy=strategy, embed=embed, index_dir=index_dir)
-    return Store.load(index_dir=index_dir)
+    try:
+        return Store.load(index_dir=index_dir)
+    except StaleIndexError:
+        build_index(strategy=strategy, embed=embed, index_dir=index_dir)
+        return Store.load(index_dir=index_dir)
 
 
 def _assert_comparable(rows: list[dict]) -> None:

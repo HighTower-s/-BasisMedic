@@ -322,12 +322,12 @@ noticing the losing-branch code was otherwise unverified by anything in the suit
 
 ## Phase 9: Polish & Cross-Cutting Concerns
 
-- [ ] T079 Write `README.md` with what/why, setup, ingest, search, eval, the result tables, and the limitations — the path a newcomer follows end to end (Constitution IX, FR-031)
-- [ ] T080 [P] Measure single-search wall-clock time in `hybrid` mode and record it in `README.md`; confirm under 3 seconds (SC-013)
-- [ ] T081 Walk `specs/001-runbook-retrieval-eval/quickstart.md` steps 0–9 on a clean clone and fix any divergence between the documented and actual behaviour (Constitution IX)
-- [ ] T082 Commit all of `eval/results/` — per-config json, `failures.jsonl`, `results.md` — so every reported number ships with the config that produced it (Constitution I)
-- [ ] T083 Re-check this feature against Constitution I–X and record the outcome in `specs/001-runbook-retrieval-eval/plan.md` § Post-Design Re-Check, noting any principle the implementation strained
-- [ ] T084 [P] Create `examples/` with three sample **logs** (not runbooks): `examples/tsv_dump.log` for the success demo, `examples/hana_disk_full.log` for the out-of-scope refusal, and `examples/mixed_lock_update.log` for the failure demo — the three scenes the demo script in `docs/prepare/10_timeline_and_checklist.md` § 5 calls for, and the file the README quickstart references
+- [X] T079 Write `README.md` with what/why, setup, ingest, search, eval, the result tables, and the limitations — the path a newcomer follows end to end (Constitution IX, FR-031)
+- [X] T080 [P] Measure single-search wall-clock time in `hybrid` mode and record it in `README.md`; confirm under 3 seconds (SC-013). **Measured**: typically 1.4–1.5s; one 7.2s outlier observed during a slow gateway response, reported rather than hidden. `bm25` mode (no network) is dominated by ~2.1s Python/`uv` startup, not search itself.
+- [X] T081 Walk `specs/001-runbook-retrieval-eval/quickstart.md` steps 0–9 on a clean clone and fix any divergence between the documented and actual behaviour (Constitution IX). **Divergences found and fixed**: (1) steps 4's documented `eval.run_retrieval` command omitted the now-required `--min-score`/`--experiment` flags and named a stale output filename — fixed in quickstart.md; (2) the `--min-score 0.95` example's "expect fewer or zero hits" claim doesn't hold when a rare token rescues the query — clarified rather than changed the behaviour, since the rescue is correct per R-02/R-03; (3) a real bug in `corpus_sha()` (CRLF/LF sensitivity) and a real bug in `run_all.py`'s index-directory aliasing were caught and fixed — see plan.md § Implementation Re-Check.
+- [X] T082 Commit all of `eval/results/` — per-config json, `failures.jsonl`, `results.md` — so every reported number ships with the config that produced it (Constitution I)
+- [X] T083 Re-check this feature against Constitution I–X and record the outcome in `specs/001-runbook-retrieval-eval/plan.md` § Post-Design Re-Check, noting any principle the implementation strained. See plan.md § Implementation Re-Check — still PASS on all ten, two real defects found and fixed, neither changing any previously reported number.
+- [X] T084 [P] Create `examples/` with three sample **logs** (not runbooks): `examples/tsv_dump.log` for the success demo, `examples/hana_disk_full.log` for the out-of-scope refusal, and `examples/mixed_lock_update.log` for the failure demo — the three scenes the demo script in `docs/prepare/10_timeline_and_checklist.md` § 5 calls for, and the file the README quickstart references. **Verified live**: all three produce the intended demo outcome (resolvable hit, explicit refusal, both lock/update runbooks surfaced for the mixed case).
 
 ---
 
