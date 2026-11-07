@@ -58,3 +58,52 @@ def test_natural_stop_ends_loop_after_one_search(fake_corpus, monkeypatch):
     assert len(records) == 1
     assert records[0].tool == "search_runbook"
     assert len(records[0].hits) >= 1
+
+
+def test_max_steps_forces_stop_rather_than_hanging(fake_corpus, monkeypatch):
+    store = _store(fake_corpus)
+    call_count = {"n": 0}
+
+    def fake_chat(messages, *, tools=None, temperature=0, model=None):
+        call_count["n"] += 1
+        # always issues a new tool call -- never stops on its own
+        return _response(_tool_call_message(
+            f"c{call_count['n']}", "search_runbook",
+            f'{{"query": "dump says TSV_TNEW_PAGE_ALLOC_FAILED variant {call_count["n"]}"}}',
+        ))
+
+    monkeypatch.setattr(llm_module, "chat", fake_chat)
+
+    records = gather_evidence("a log", store=store, max_steps=3, mode="bm25")
+    assert call_count["n"] == 3  # exactly max_steps model turns, never more
+    assert len(records) == 3  # each turn's query was distinct, so each was dispatched
+
+
+def test_repeated_identical_call_is_not_redispatched(fake_corpus, monkeypatch):
+    store = _store(fake_corpus)
+    responses = [
+        _response(_tool_call_message(
+            "c1", "search_runbook",
+            '{"query": "dump says TSV_TNEW_PAGE_ALLOC_FAILED no more storage space"}',
+        )),
+        _response(_tool_call_message(
+            "c2", "search_runbook",
+            '{"query": "  dump SAYS tsv_tnew_page_alloc_failed no more storage space  "}',
+        )),
+        _response(_no_tool_call_message()),
+    ]
+    dispatch_count = {"n": 0}
+
+    import app.agent.loop as loop_module
+    original_dispatch = loop_module._dispatch
+
+    def counting_dispatch(*a, **kw):
+        dispatch_count["n"] += 1
+        return original_dispatch(*a, **kw)
+
+    monkeypatch.setattr(loop_module, "_dispatch", counting_dispatch)
+    monkeypatch.setattr(llm_module, "chat", lambda *a, **kw: responses.pop(0))
+
+    records = gather_evidence("a log", store=store, max_steps=5, mode="bm25")
+    assert dispatch_count["n"] == 1  # the second (case/whitespace-only-different) call was never dispatched
+    assert len(records) == 1

@@ -4,6 +4,7 @@ R-05). Never raises on malformed model output — always returns a valid TriageR
 
 import json
 import re
+from pathlib import Path
 
 from pydantic import ValidationError
 
@@ -79,7 +80,9 @@ def _empty_evidence_fallback() -> TriageResult:
     )
 
 
-def format_result(evidence: list[Hit], log: str) -> TriageResult:
+def format_result(
+    evidence: list[Hit], log: str, *, runbook_dir: Path | None = None, tcodes_path: Path | None = None
+) -> TriageResult:
     messages = _build_messages(evidence, log)
 
     for _attempt in range(REPAIR_ATTEMPTS + 1):
@@ -95,4 +98,6 @@ def format_result(evidence: list[Hit], log: str) -> TriageResult:
                 {"role": "user", "content": f"That was invalid: {exc}. Reply again with ONLY corrected JSON."}
             )
 
-    return build_fallback(evidence) if evidence else _empty_evidence_fallback()
+    if evidence:
+        return build_fallback(evidence, runbook_dir=runbook_dir, tcodes_path=tcodes_path)
+    return _empty_evidence_fallback()
