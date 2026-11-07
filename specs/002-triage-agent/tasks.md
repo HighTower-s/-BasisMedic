@@ -161,11 +161,11 @@ labels `out_of_scope`) and confirm the result's category is `out_of_scope` with 
 
 ### Tests for User Story 2
 
-- [ ] T027 [P] [US2] Write `tests/test_agent_verify.py::test_out_of_scope_forcing` (extends T012's file): with a mocked `format_result` returning a non-`out_of_scope` draft, if every `ToolCallRecord` with `tool == "search_runbook"` in Evidence returned `NO_RELEVANT_RUNBOOK`, the forced result has `category == "out_of_scope"`, `tcodes == []`, `sources == []` (FR-011, FR-012, R-07); a multi-search case where at least one call found something is **not** forced out of scope even if an earlier call found nothing (US2 acceptance scenario 3 / R-07's multi-search carve-out)
+- [X] T027 [P] [US2] Write `tests/test_agent_verify.py::test_out_of_scope_forcing` (extends T012's file): with a mocked `format_result` returning a non-`out_of_scope` draft, if every `ToolCallRecord` with `tool == "search_runbook"` in Evidence returned `NO_RELEVANT_RUNBOOK`, the forced result has `category == "out_of_scope"`, `tcodes == []`, `sources == []` (FR-011, FR-012, R-07); a multi-search case where at least one call found something is **not** forced out of scope even if an earlier call found nothing (US2 acceptance scenario 3 / R-07's multi-search carve-out)
 
 ### Implementation for User Story 2
 
-- [ ] T028 [US2] Implement the `out_of_scope`-forcing step in `app/triage_service.py:triage()` per research.md R-07: after `gather_evidence` (T022), if Evidence is empty, skip `format_result` (T023) entirely and build the result directly with `category="out_of_scope"`, `tcodes=[]`, `sources=[]`, `confidence="low"` — no model call spent formatting a draft that would be discarded (contracts/service.md pipeline step 4)
+- [X] T028 [US2] Implement the `out_of_scope`-forcing step in `app/triage_service.py:triage()` per research.md R-07: after `gather_evidence` (T022), if Evidence is empty, skip `format_result` (T023) entirely and build the result directly with `category="out_of_scope"`, `tcodes=[]`, `sources=[]`, `confidence="low"` — no model call spent formatting a draft that would be discarded (contracts/service.md pipeline step 4)
 
 **Checkpoint**: `python -m app.cli triage --file examples/hana_disk_full.log` returns `out_of_scope` with exit
 code 0. **US1 + US2 both independently testable.**
